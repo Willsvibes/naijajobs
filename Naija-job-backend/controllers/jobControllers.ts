@@ -7,16 +7,12 @@ export const postJob = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Only employers can create jobs" });
     }
 
-    const {
-      title,
-      company,
-      jobType,
-      category,
-      location,
-      duration,
-      skills,
-      salary,
-    } = req.body;
+    const { title, company, jobType, category, location, duration, skills, salary, description } = req.body;
+
+    // Validate required fields
+    if (!title || !company || !category || !location || !salary) {
+      return res.status(400).json({ message: "Title, company, category, location, and salary are required" });
+    }
 
     const job = await Job.create({
       title,
@@ -27,17 +23,16 @@ export const postJob = async (req: Request, res: Response) => {
       duration,
       skills,
       salary,
-      createdBy: req.user._id, 
+      description,
+      createdBy: req.user._id,
     });
 
     res.status(201).json(job);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: (error as Error).message });
+    console.error("Post job error:", error);
+    res.status(500).json({ message: "Failed to create job listing" });
   }
 };
-
-
 
 export const getJobs = async (req: Request, res: Response) => {
   try {
@@ -48,29 +43,23 @@ export const getJobs = async (req: Request, res: Response) => {
     let jobs;
 
     if (req.user.role === "employer") {
-   
-      jobs = await Job.find({ createdBy: req.user._id });
+      // Employers see only their own listings
+      jobs = await Job.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
     } else {
-    
-      jobs = await Job.find();
+      // Employees see all available jobs
+      jobs = await Job.find().sort({ createdAt: -1 });
     }
 
     res.status(200).json(jobs);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: (error as Error).message });
+    console.error("Get jobs error:", error);
+    res.status(500).json({ message: "Failed to fetch jobs" });
   }
 };
 
-
-
-
 export const getOne = async (req: Request, res: Response) => {
   try {
-    const job = await Job.findById(req.params.id).populate(
-      "createdBy",
-      "name email"
-    );
+    const job = await Job.findById(req.params.id).populate("createdBy", "name email");
 
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
@@ -78,6 +67,7 @@ export const getOne = async (req: Request, res: Response) => {
 
     res.json(job);
   } catch (error) {
-    res.status(500).json({ message: (error as Error).message });
+    console.error("Get single job error:", error);
+    res.status(500).json({ message: "Failed to fetch job details" });
   }
 };

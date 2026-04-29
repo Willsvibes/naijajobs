@@ -35,6 +35,10 @@ const jobSchema = new mongoose.Schema({
 
     skills: [String],
 
+    description: {
+        type: String,
+        default: "",
+    },
 
     salary: {
         type: Number,

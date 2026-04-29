@@ -1,193 +1,228 @@
-
-
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import api from "../api/axiosInstance";
+import useToastMessage from "../Hooks/useToastMesage";
 
 const PostJob = () => {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    pay: "",
+    salary: "", // Changed from 'pay' to 'salary' to match backend model
     location: "",
     contact: "",
-    type: "",
-    skills: [],
-    employmentType: "",
+    category: "", // Changed from 'type' to 'category' to match backend model
+    skills: [] as string[],
+    jobType: "", // Changed from 'employmentType' to 'jobType' to match backend model
     duration: "",
     experienceLevel: "",
-    postedDate: ""
   });
+  const [loading, setLoading] = useState(false);
+  const [skillInput, setSkillInput] = useState("");
 
+  const navigate = useNavigate();
+  const { toastSuccess, toastError, toastLoading } = useToastMessage();
 
-
-  const handleInput = (e: React.FormEvent<any>) => {
-    setForm({...form, [e.currentTarget.name]: e.currentTarget.value})
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e:React.ChangeEvent<any>) => {
+  const addSkill = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && skillInput.trim()) {
+      e.preventDefault();
+      if (!form.skills.includes(skillInput.trim())) {
+        setForm({ ...form, skills: [...form.skills, skillInput.trim()] });
+      }
+      setSkillInput("");
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setForm({ ...form, skills: form.skills.filter(s => s !== skillToRemove) });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(form);
-    alert("Job posted successfully!");
+    
+    if (!form.title || !form.description || !form.salary || !form.location) {
+      toastError("Please fill in all required fields (*)");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      toastLoading("Publishing your job listing...");
+
+      // Convert salary to number
+      const payload = {
+        ...form,
+        salary: Number(form.salary),
+        postedDate: new Date().toISOString()
+      };
+
+      await api.post("/jobs", payload);
+
+      toastSuccess("Job posted successfully! 🚀");
+      navigate("/dashboard");
+    } catch (err: any) {
+      console.error("Post job error", err);
+      const message = err.response?.data?.message || "Failed to post job. Please try again.";
+      toastError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-black py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden">
+    <div className="min-h-screen bg-slate-950 py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        <form onSubmit={handleSubmit} className="bg-slate-900/80 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden backdrop-blur-xl">
           {/* Header */}
-          <div className="bg-linear-to-r  from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-400 hover:to-yellow-500 p-6">
-            <h2 className="text-3xl font-bold text-red-100">Post a Hustle</h2>
-            <p className="text-red-100 mt-2">Fill in the details to create your job listing</p>
+          <div className="bg-linear-to-r from-amber-500 to-yellow-600 p-8">
+            <h2 className="text-3xl font-black text-black">Post a Hustle</h2>
+            <p className="text-black/80 font-medium mt-2">Connecting talent with opportunities</p>
           </div>
 
-          {/* Form */}
-          <div className="p-8 space-y-6">
-            {/* Job Title */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Job Title *
-              </label>
-              <input
-                name="title"
-                value={form.title}
-                onInput={handleInput}
-                placeholder="e.g., Freelance Designer, Delivery Driver"
-                required
-                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition placeholder-gray-500"
-              />
+          <div className="p-8 space-y-8">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-amber-500 uppercase tracking-wider">Basic Information</h3>
+              
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Job Title *</label>
+                  <input
+                    name="title"
+                    value={form.title}
+                    onChange={handleInput}
+                    placeholder="e.g., Senior Frontend Engineer"
+                    required
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition placeholder-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Detailed Description *</label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleInput}
+                    placeholder="Role responsibilities, requirements, and company culture..."
+                    required
+                    rows={5}
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition placeholder-slate-600 resize-none"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Description *
-              </label>
-              <textarea
-                name="description"
-                value={form.description}
-                onInput={handleInput}
-                placeholder="Describe the job, requirements, and responsibilities..."
-                required
-                rows={4}
-                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition placeholder-gray-500 resize-none"
-              />
+            {/* Logistics */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-amber-500 uppercase tracking-wider">Logistics & Pay</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Salary (₦) *</label>
+                  <input
+                    name="salary"
+                    type="number"
+                    value={form.salary}
+                    onChange={handleInput}
+                    placeholder="Monthly pay"
+                    required
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition placeholder-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Job Category *</label>
+                  <select
+                    name="category"
+                    value={form.category}
+                    onChange={handleInput}
+                    required
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Design">Design</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Writing">Writing</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Location *</label>
+                  <input
+                    name="location"
+                    value={form.location}
+                    onChange={handleInput}
+                    placeholder="e.g. Remote, Lagos"
+                    required
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition placeholder-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Job Type</label>
+                  <select
+                    name="jobType"
+                    value={form.jobType}
+                    onChange={handleInput}
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition"
+                  >
+                    <option value="">Select type</option>
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Freelance">Freelance</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Pay */}
+            {/* Tags & Skills */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-amber-500 uppercase tracking-wider">Required Skills</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Pay Rate ($) *
-                </label>
                 <input
-                  name="pay"
-                  type="text"
-                  value={form.pay}
-                  onInput={handleInput}
-                  placeholder="Pay"
-                  required
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition placeholder-gray-500"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyDown={addSkill}
+                  placeholder="Type a skill and press Enter"
+                  className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition placeholder-slate-600"
                 />
-              </div>
-
-              {/* Employment Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Employment Type
-                </label>
-                <select
-                  name="employmentType"
-                  value={form.employmentType}
-                  onInput={handleInput}
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
-                >
-                  <option value="">Select type</option>
-                  <option value="full-time">Full-time</option>
-                  <option value="part-time">Part-time</option>
-                  <option value="contract">Contract</option>
-                  <option value="freelance">Freelance</option>
-                  <option value="gig">Gig</option>
-                </select>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {form.skills.map((skill, index) => (
+                    <span key={index} className="flex items-center gap-2 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg text-sm font-medium">
+                      {skill}
+                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-white transition-colors">×</button>
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Location *
-              </label>
-              <input
-                name="location"
-                value={form.location}
-                onInput={handleInput}
-                placeholder="e.g., Lagos, Remote, Abuja"
-                required
-                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition placeholder-gray-500"
-              />
-            </div>
-
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Experience Level */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Experience Level
-                </label>
-                <select
-                  name="experienceLevel"
-                  value={form.experienceLevel}
-                  onInput={handleInput}
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
-                >
-                  <option value="">Select level</option>
-                  <option value="entry">Entry Level</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="expert">Expert</option>
-                  <option value="any">Any Level</option>
-                </select>
-              </div>
-
-              {/* Duration */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Duration
-                </label>
-                <input
-                  name="duration"
-                  value={form.duration}
-                  onInput={handleInput}
-                  placeholder="e.g., 3 months, Ongoing"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition placeholder-gray-500"
-                />
-              </div>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Contact Information *
-              </label>
-              <input
-                name="contact"
-                value={form.contact}
-                onInput={handleInput}
-                placeholder="Email, phone, or preferred contact method"
-                required
-                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition placeholder-gray-500"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <div className="pt-4">
+            {/* Actions */}
+            <div className="pt-6 border-t border-slate-800 flex gap-4">
               <button
-                onClick={handleSubmit}
-                className="w-full bg-linear-to-r from-amber-400 via-yellow-300 to-amber-400 hover:to-red-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                type="button"
+                onClick={() => navigate("/dashboard")}
+                className="flex-1 px-6 py-4 rounded-xl border border-slate-700 text-slate-300 font-bold hover:bg-slate-800 transition shadow-lg"
               >
-                Post Hustle
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-2 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl transition shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50"
+              >
+                {loading ? "Publishing..." : "Post Hustle"}
               </button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

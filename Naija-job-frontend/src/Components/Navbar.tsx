@@ -1,14 +1,13 @@
-
 import React from 'react';
 import { NavLink } from 'react-router';
 import { Home, PlusCircle, Sparkles, User2Icon } from 'lucide-react';
 import Logo from './Logo';
-import { useAuth } from '../Hooks/authContext'; // new context import
+import { useAuthStore } from '../store/useAuthStore'; // New Zustand store import
 
 const allNavItems = [
   {
     name: "Dashboard",
-    link: "/",
+    link: "/dashboard", // Updated link to /dashboard
     icon: Home,
     roles: ["employee", "employer"]
   },
@@ -27,8 +26,8 @@ const allNavItems = [
 ];
 
 const Navbar: React.FC = () => {
-  const { user } = useAuth(); // get logged-in user from context
-  if (!user) return null; // optional: hide navbar if no user
+  const user = useAuthStore((state) => state.user); // get logged-in user from Zustand
+  if (!user) return null; 
 
   // filter nav items based on role
   const navItems = allNavItems.filter(item => item.roles.includes(user.role));
