@@ -29,17 +29,17 @@ const FormInput: React.FC<FormInputProps> = ({
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div>
       {label && (
         <label
-          className="text-sm text-slate-400"
+          className="text-darkgreen xl:text-lg text-sm font-bold"
           htmlFor={id}
         >
           {label}
         </label>
       )}
 
-      <div className="p-2.5 rounded-lg gap-3 bg-slate-800 border border-slate-700 focus:border-amber-500 focus:outline-none transition-colors flex items-center">
+      <div className="flex items-center gap-2 border-b border-darkgreen rounded-lg px-2">
         {icon ? (
           icon
         ) : type === "email" ? (
@@ -49,7 +49,7 @@ const FormInput: React.FC<FormInputProps> = ({
         )}
 
         <input
-          className="w-full outline-0"
+          className="w-full p-2 outline-0"
           type={type === "password" && showPassword ? "text" : type}
           name={name || id}
           id={id}

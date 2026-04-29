@@ -7,7 +7,7 @@ export const dummyJobs: Job[] = [
     title: "Electrician Needed for Shop Lighting",
     description:
       "We need a skilled electrician to fix multiple faulty light fixtures in a small retail shop. The job involves troubleshooting existing wiring, replacing damaged light holders, and ensuring all lights meet safety standards. Applicants should have experience with indoor commercial lighting installations.",
-    pay: 15000,
+    pay: "15000",
     location: "Ikeja",
     type: "Electrical",
     employmentType: "Full-time",

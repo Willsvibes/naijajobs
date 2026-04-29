@@ -1,105 +1,89 @@
+
 import { useParams, Link, useNavigate } from "react-router";
-import { useEffect, useState, useCallback } from "react";
-import type { Job } from "../types/job";
-import api from "../api/axiosInstance";
+import { useEffect, useState } from "react";
+import type{ Job } from "../types/job";
 import {
   ArrowLeft,
   MapPin,
   BadgeDollarSign,
   Briefcase,
   Clock,
+  Calendar,
   Building2,
   Sparkles,
 } from "lucide-react";
 
-interface ApiJob {
-  _id: string;
-  title: string;
-  company: string;
-  location: string;
-  duration: string;
-  skills: string[];
-  salary: number;
-  jobType: string;
-  category: string;
-  description?: string;
-}
-
 const JobDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{id: string}>();
   const navigate = useNavigate();
-  const [job, setJob] = useState<Job | null>(null);
+  const [job, setJob] = useState<Job| null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchJob = useCallback(async () => {
-    if (!id) return;
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    if(!id) return;
+  
+    const fetchJob = async () => {
     try {
-      const res = await api.get<ApiJob>(`/jobs/${id}`);
-      const data = res.data;
+      const res = await fetch(`http://localhost:5000/api/jobs/${id}`);
+      const data = await res.json();
 
       setJob({
         id: data._id,
         title: data.title,
         company: data.company,
         location: data.location,
-        description: data.description ?? "",
+        description: data.description,
         duration: data.duration,
         skills: data.skills,
         pay: data.salary,
         type: data.category,
         employmentType: data.jobType
       });
-    } catch (err: any) {
-      console.error("Error fetching job details", err);
-      setError("Failed to load job details. It may have been removed or is unavailable.");
-    } finally {
+
       setLoading(false);
+    } catch (error) {
+      console.error(error);
     }
-  }, [id]);
+  };
 
-  useEffect(() => {
-    fetchJob();
-  }, [fetchJob]);
+  fetchJob();
+}, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-      </div>
-    );
-  }
 
-  if (error || !job) {
+if (loading){
+  return <p className="text-white text-center text-3xl mt-20">
+    Loading job...
+  </p>
+}
+  if (!job) {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center p-8 bg-slate-900/50 rounded-2xl border border-slate-800">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-800/50 mb-4 text-slate-600">
-            <Briefcase size={32} />
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-800/50 mb-4">
+            <Briefcase size={32} className="text-slate-600" />
           </div>
-          <p className="text-slate-400 text-xl mb-6">{error || "Job not found"}</p>
+          <p className="text-slate-400 text-xl mb-6">Job not found</p>
           <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 px-6 py-3 rounded-xl text-sm font-semibold text-black transition-all duration-300"
+            to="/"
+            className="inline-flex items-center gap-2 bg-linear-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 px-6 py-3 rounded-xl text-sm font-semibold text-black transition-all duration-300"
           >
             <ArrowLeft size={18} />
-            Back to Dashboard
+            Back to Jobs
           </Link>
         </div>
       </div>
     );
+   
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 pb-20">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Animated background accent */}
       <div className="fixed inset-0 bg-linear-to-br from-amber-500/5 via-transparent to-yellow-500/5 pointer-events-none"></div>
 
       <div className="relative max-w-4xl mx-auto px-6 py-12">
-        {/* Back Link */}
+        {/* Back Button */}
         <Link
-          to="/dashboard"
+          to="/"
           className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-8 transition-colors group"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
@@ -107,98 +91,121 @@ const JobDetails = () => {
         </Link>
 
         {/* Job Header Card */}
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl mb-8">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl mb-6">
+          <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-4 py-1.5 mb-4">
+              <div className="inline-flex items-center gap-2 bg-linear-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-full px-4 py-1.5 mb-4">
                 <Sparkles size={14} className="text-amber-400" />
-                <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Top Match</span>
+                <span className="text-xs text-amber-400 font-medium">Featured Opportunity</span>
               </div>
               
-              <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+              <h1 className="text-4xl font-bold text-white mb-3 bg-linear-to-r from-amber-400 via-yellow-300 to-amber-400  bg-clip-text">
                 {job.title}
               </h1>
 
-              <div className="flex flex-wrap gap-4 text-slate-300">
-                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
-                  <Building2 size={18} className="text-amber-400" />
-                  <span className="font-semibold">{job.company}</span>
-                </div>
-                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
-                  <MapPin size={18} className="text-slate-400" />
-                  <span>{job.location}</span>
-                </div>
+              <div className="flex items-center gap-2 text-slate-300 mb-4">
+                <Building2 size={18} className="text-amber-400" />
+                <span className="text-lg font-medium">{job.company}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-slate-400">
+                <MapPin size={18} className="text-slate-500" />
+                <span>{job.location}</span>
               </div>
             </div>
 
-            <div className="bg-amber-500 text-black text-sm px-6 py-2 rounded-xl font-bold self-start shadow-lg shadow-amber-500/20">
+            {/* Employment Type Badge */}
+            <div className="bg-linear-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-400 text-sm px-4 py-2 rounded-full font-semibold">
               {job.employmentType || job.type}
             </div>
           </div>
         </div>
 
-        {/* Info Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 group hover:border-amber-500/40 transition-all duration-300">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <BadgeDollarSign size={24} className="text-emerald-400" />
+        {/* Job Info Grid */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-6">
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-xl p-5 hover:border-amber-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <BadgeDollarSign size={20} className="text-emerald-400" />
+              </div>
             </div>
-            <p className="text-sm text-slate-500 font-medium uppercase">Monthly Salary</p>
-            <p className="text-2xl font-bold text-white mt-1">₦{Number(job.pay).toLocaleString()}</p>
+            <p className="text-sm text-slate-500 mb-1">Salary</p>
+            <p className="text-xl font-bold text-white">₦{Number(job.pay).toLocaleString()}</p>
+            <p className="text-xs text-slate-600 mt-1">per month</p>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 group hover:border-blue-500/40 transition-all duration-300">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Briefcase size={24} className="text-blue-400" />
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-xl p-5 hover:border-amber-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Briefcase size={20} className="text-blue-400" />
+              </div>
             </div>
-            <p className="text-sm text-slate-500 font-medium uppercase">Job Category</p>
-            <p className="text-2xl font-bold text-white mt-1">{job.type}</p>
+            <p className="text-sm text-slate-500 mb-1">Job Type</p>
+            <p className="text-xl font-bold text-white">{job.type}</p>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 group hover:border-amber-500/40 transition-all duration-300">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Clock size={24} className="text-amber-400" />
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-xl p-5 hover:border-amber-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <Clock size={20} className="text-amber-400" />
+              </div>
             </div>
-            <p className="text-sm text-slate-500 font-medium uppercase">Job Duration</p>
-            <p className="text-2xl font-bold text-white mt-1">{job.duration || "Permanent"}</p>
+            <p className="text-sm text-slate-500 mb-1">Posted</p>
+            <p className="text-xl font-bold text-white">2 days ago</p>
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-3xl p-8 shadow-2xl mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <span className="w-1.5 h-8 bg-amber-500 rounded-full"></span>
-            About the Role
+        {/* Job Description */}
+        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl mb-6">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-linear-to-b from-amber-500 to-yellow-600 rounded-full"></span>
+            Job Description
           </h2>
-          <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap">
+          <p className="text-slate-300 leading-relaxed text-lg">
             {job.description}
-          </div>
+          </p>
 
-          <div className="mt-10 pt-10 border-t border-slate-800/50">
-            <h3 className="text-xl font-bold text-white mb-6">Required Skills</h3>
-            <div className="flex flex-wrap gap-2">
-              {job.skills?.length > 0 ? job.skills.map((skill, idx) => (
-                <span key={idx} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm font-medium border border-slate-700">
-                  {skill}
-                </span>
-              )) : <p className="text-slate-500 italic">No specific skills listed.</p>}
+          {/* Additional Details */}
+          <div className="mt-8 pt-8 border-t border-slate-800">
+            <h3 className="text-xl font-semibold text-white mb-4">Key Details</h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Calendar size={18} className="text-amber-400 mt-1 shrink-0" />
+                <div>
+                  <p className="text-slate-400 text-sm">Start Date</p>
+                  <p className="text-white font-medium">Immediate</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Building2 size={18} className="text-amber-400 mt-1 shrink-0" />
+                <div>
+                  <p className="text-slate-400 text-sm">Company</p>
+                  <p className="text-white font-medium">{job.company}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <MapPin size={18} className="text-amber-400 mt-1 shrink-0" />
+                <div>
+                  <p className="text-slate-400 text-sm">Work Location</p>
+                  <p className="text-white font-medium">{job.location}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Application Action */}
-        <div className="sticky bottom-6">
-          <button 
-            onClick={() => navigate("/job/apply")}
-            className="w-full bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-5 rounded-2xl shadow-2xl shadow-amber-500/20 transition-all duration-300 text-xl flex items-center justify-center gap-3 active:scale-[0.98]"
-          >
-            Apply for this position
-            <ArrowLeft size={24} className="rotate-180" />
-          </button>
-        </div>
+        {/* Apply Button */}
+        <button className="w-full bg-linear-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-bold py-4 rounded-xl shadow-lg hover:shadow-amber-500/25 transition-all duration-300 text-lg group">
+          <span onClick={()=>navigate("/job/apply")} className="flex items-center justify-center gap-2">
+            Apply Now
+            <ArrowLeft size={20} className="rotate-180 group-hover:translate-x-1 transition-transform" />
+          </span>
+         
+        </button>
 
-        <p className="text-center text-slate-500 text-sm mt-8">
-          Apply responsibly. Good luck with your application!
+        {/* Footer Note */}
+        <p className="text-center text-slate-600 text-sm mt-6">
+          By applying, you agree to our terms and conditions
         </p>
       </div>
     </div>

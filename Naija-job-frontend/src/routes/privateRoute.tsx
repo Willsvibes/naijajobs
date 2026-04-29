@@ -1,6 +1,7 @@
+
 import React from "react";
 import { Navigate } from "react-router";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuth } from "../Hooks/authContext";
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -8,11 +9,12 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, allowedRoles }) => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user } = useAuth();
 
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/auth/login" replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
+
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard" replace />;
