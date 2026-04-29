@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../Hooks/authContext";
+import { useAuthStore } from "../store/useAuthStore";
 import useToastMessage from "../Hooks/useToastMesage";
 import FormInput from "../Ui/formInput";
 import { Mail, Lock } from "lucide-react";
+import api from "../api/axiosInstance";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,53 +12,40 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const { toastSuccess, toastError, toastLoading } = useToastMessage();
 
   const handleLogin = async () => {
-    if (!email) {
-      toastError("Email is required");
-      return;
-    }
-    if (!password) {
-      toastError("Password is required");
+    if (!email || !password) {
+      toastError("Please fill in all fields");
       return;
     }
 
     try {
       setLoading(true);
-      toastLoading("Logging in...");
+      toastLoading("Authenticating...");
 
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await api.post("/auth/login", { email, password });
+      
+      // Axios stores response data in .data
+      const { user, token } = res.data;
 
-      const data = await res.json();
+      // Update Zustand store (this also persists to localStorage automatically)
+      setAuth(user, token);
 
-      if (!res.ok) {
-        toastError(data.message || "Login failed");
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setUser(data.user);
-
-      toastSuccess("Login successful 🎉");
-      setLoading(false);
+      toastSuccess("Welcome back! 👋");
       navigate("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error", err);
-      toastError("Something went wrong");
+      const message = err.response?.data?.message || "Login failed. Please check your credentials.";
+      toastError(message);
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-sm mx-auto mt-20 text-white">
+    <div className="max-w-md mx-auto text-white flex flex-col gap-4 bg-slate-900/50 p-8 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
 
       <FormInput
@@ -83,16 +71,15 @@ const Login = () => {
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="bg-amber-500 py-2 rounded mt-2"
+        className="w-full bg-amber-500 py-2 rounded mt-2 font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50"
       >
         {loading ? "Logging in..." : "Login"}
       </button>
 
-      {/* Sign up link */}
       <p className="text-sm text-center mt-4">
         Don’t have an account?{" "}
         <span
-          onClick={() => navigate("/signup")}
+          onClick={() => navigate("/auth/signup")}
           className="text-amber-400 font-bold cursor-pointer hover:underline"
         >
           Sign Up

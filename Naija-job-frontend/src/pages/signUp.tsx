@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router";
+import api from "../api/axiosInstance";
+import useToastMessage from "../Hooks/useToastMesage";
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -8,80 +10,117 @@ const Signup = () => {
     password: "",
     role: "employee", 
   });
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const { toastSuccess, toastError, toastLoading } = useToastMessage();
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
+    if (!form.name || !form.email || !form.password) {
+      toastError("Please fill in all fields");
+      return;
+    }
+
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      setLoading(true);
+      toastLoading("Creating your account...");
 
-      const data = await res.json();
+      const res = await api.post("/auth/register", form);
 
-      if (!res.ok) {
-        alert(data.message || "Signup failed");
-        return;
+      if (res.status === 201) {
+        toastSuccess("Registration successful! Please login.");
+        navigate("/auth/login");
       }
-
-      alert("Signup successful! You can now login.");
-      console.log("navigating now...");
-      navigate("/login") ;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Signup error", err);
+      const message = err.response?.data?.message || "Signup failed. Please try again.";
+      toastError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 text-white flex flex-col gap-4">
-      <h2 className="text-2xl font-bold">Sign Up</h2>
+    <div className="max-w-md text-white flex flex-col gap-4 bg-slate-900/50 p-8 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+      <h2 className="text-2xl font-bold text-center mb-4">Create Account</h2>
 
-      <input
-        name="name"
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-slate-400">Full Name</label>
+        <input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          placeholder="John Doe"
+          className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-amber-500 focus:outline-none transition-colors"
+        />
+      </div>
+
+      {/* <FormInput
+        id="name"
+        label="Full Name"
+        type="text"
+        placeholder="John Doe"
         value={form.name}
         onChange={handleChange}
-        placeholder="Full Name"
-        className="p-2 rounded bg-slate-800"
-      />
+      /> */}
 
-      <input
-        name="email"
-        value={form.email}
-        onChange={handleChange}
-        placeholder="Email"
-        className="p-2 rounded bg-slate-800"
-      />
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-slate-400">Email Address</label>
+        <input
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          placeholder="john@example.com"
+          className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-amber-500 focus:outline-none transition-colors"
+        />
+      </div>
 
-      <input
-        type="password"
-        name="password"
-        value={form.password}
-        onChange={handleChange}
-        placeholder="Password"
-        className="p-2 rounded bg-slate-800"
-      />
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-slate-400">Password</label>
+        <input
+          type="password"
+          name="password"
+          value={form.password}
+          onChange={handleChange}
+          placeholder="••••••••"
+          className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-amber-500 focus:outline-none transition-colors"
+        />
+      </div>
 
-      <select
-        name="role"
-        value={form.role}
-        onChange={handleChange}
-        className="p-2 rounded bg-slate-800"
-      >
-        <option value="employee">Employee</option>
-        <option value="employer">Employer</option>
-      </select>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-slate-400">Identify as</label>
+        <select
+          name="role"
+          value={form.role}
+          onChange={handleChange}
+          className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-amber-500 focus:outline-none transition-colors appearance-none"
+        >
+          <option value="employee">Employee (Searching for jobs)</option>
+          <option value="employer">Employer (Posting jobs)</option>
+        </select>
+      </div>
 
       <button
         onClick={handleSubmit}
-        className="bg-amber-500 py-2 rounded mt-2"
+        disabled={loading}
+        className="bg-amber-500 py-3 rounded-lg mt-4 font-bold hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20 disabled:opacity-50"
       >
-        Sign Up
+        {loading ? "Creating account..." : "Sign Up"}
       </button>
+
+      <p className="text-sm text-center mt-2 text-slate-400">
+        Already have an account?{" "}
+        <span
+          onClick={() => navigate("/auth/login")}
+          className="text-amber-400 font-bold cursor-pointer hover:underline"
+        >
+          Login
+        </span>
+      </p>
     </div>
   );
 };
