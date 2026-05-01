@@ -2,12 +2,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import RoutesConfig from './routes/routes';
-import { AuthProvider } from './Hooks/authContext';// import context
+import { Toaster } from 'sonner';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <RoutesConfig />
-    </AuthProvider>
+    <Toaster position="top-center" richColors />
+    <RoutesConfig />
   </StrictMode>
 );
