@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../store/useAuthStore";
@@ -25,19 +26,24 @@ const Login = () => {
       setLoading(true);
       toastLoading("Authenticating...");
 
-      const res = await api.post("/auth/login", { email, password });
-      
-      // Axios stores response data in .data
-      const { user, token } = res.data;
+      const res = await api.post(
+        "/auth/login",
+        { email, password },
+        { withCredentials: true } 
+      );
 
-      // Update Zustand store (this also persists to localStorage automatically)
-      setAuth(user, token);
+ 
+      const { user, accessToken } = res.data;
 
-      toastSuccess("Welcome back! 👋");
+      setAuth(user, accessToken);
+
+      toastSuccess("Welcome back!");
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Login error", err);
-      const message = err.response?.data?.message || "Login failed. Please check your credentials.";
+      const message =
+        err.response?.data?.message ||
+        "Login failed. Please check your credentials.";
       toastError(message);
     } finally {
       setLoading(false);
@@ -90,3 +96,4 @@ const Login = () => {
 };
 
 export default Login;
+
