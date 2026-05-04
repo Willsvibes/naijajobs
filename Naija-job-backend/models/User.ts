@@ -21,12 +21,19 @@ const userSchema = new mongoose.Schema({
         enum: ["employer", "employee", "admin"],
         default: "employee",
     },
+
+    refreshToken: {
+        type: String,
+        default: "",
+    },
     skills: [String],
     companyName: String,
     bio: String,
 
 }, {
     timestamps: true,
-});
+},
+
+);
 
 export const User = mongoose.model("User", userSchema);

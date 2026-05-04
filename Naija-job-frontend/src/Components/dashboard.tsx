@@ -1,9 +1,9 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import EmployeeDashboard from "../pages/EmployeeDashboard";
 import EmployerDashboard from "../pages/EmployerDashboard";
-import { useAuth } from "../Hooks/authContext";
+import { useAuthStore } from "../store/useAuthStore";
 import type { Job } from "../types/job";
+import api from "../api/axiosInstance";
 
 interface ApiJob {
   _id: string;
@@ -19,63 +19,72 @@ interface ApiJob {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchJobs = useCallback(async () => {
     if (!user) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Cleaner API call using abstracted instance
+      const res = await api.get<ApiJob[]>("/jobs");
+      
+      // Transform data to match frontend requirements
+      const formattedJobs: Job[] = res.data.map((job) => ({
+        id: job._id,
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        duration: job.duration,
+        skills: job.skills,
+        pay: job.salary,
+        employmentType: job.jobType,
+        type: job.category,
+        description: job.description ?? "",
+      }));
 
-    const fetchJobs = async () => {
-      setLoading(true);
-      try {
-        
-        const url =
-          user.role === "employee"
-            ? "http://localhost:5000/api/jobs"
-            : `http://localhost:5000/api/jobs`;
-        // const url =
-        //   user.role === "employee"
-        //     ? "http://localhost:5000/api/jobs"
-        //     : `http://localhost:5000/api/jobs?employerId=${user.id}`;
-
-        const res = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        const data: ApiJob[] = await res.json();
-
-        // Map backend jobs to frontend Job type
-        const formattedJobs: Job[] = data.map((job) => ({
-          id: job._id,
-          title: job.title,
-          company: job.company,
-          location: job.location,
-          duration: job.duration,
-          skills: job.skills,
-          pay: job.salary,
-          employmentType: job.jobType,
-          type: job.category,
-          description: job.description ?? "",
-        }));
-
-        setJobs(formattedJobs);
-      } catch (err) {
-        console.error("Error fetching jobs", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobs();
+      setJobs(formattedJobs);
+    } catch (err: any) {
+      console.error("Error fetching jobs", err);
+      setError("Failed to load jobs. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
-  if (!user || loading)
-    return <p className="text-white p-6">Loading...</p>;
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
-  // Render based on role
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-400 mb-4">{error}</p>
+        <button 
+          onClick={fetchJobs}
+          className="px-4 py-2 bg-amber-500 rounded text-white hover:bg-amber-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
   return user.role === "employer" ? (
     <EmployerDashboard jobs={jobs} />
   ) : (

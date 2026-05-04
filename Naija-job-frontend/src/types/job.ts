@@ -1,8 +1,8 @@
 export interface Job{
-    id: string;
+    id: string | number;
     title: string;
     description: string;
-    pay: Number;
+    pay: number | string;
     location: string;
     contact?: string;
    type: string;
