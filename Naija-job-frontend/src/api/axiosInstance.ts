@@ -5,13 +5,13 @@ const API_BASE_URL =
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // ✅ IMPORTANT (send cookies)
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// ✅ REQUEST INTERCEPTOR
+// REQUEST INTERCEPTOR
 api.interceptors.request.use(
   (config) => {
     const storage = localStorage.getItem("auth-storage");
@@ -26,7 +26,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 🔁 REFRESH LOGIC
+//  REFRESH LOGIC
 let isRefreshing = false;
 let failedQueue: any[] = [];
 

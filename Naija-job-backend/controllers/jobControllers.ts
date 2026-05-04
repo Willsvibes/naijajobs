@@ -71,3 +71,31 @@ export const getOne = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch job details" });
   }
 };
+
+
+export const deleteJob = async (req: Request, res: Response) => {
+    try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const job = await Job.findById(req.params.id);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    const isOwner = job.createdBy.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "Not authorized to delete this job" });
+    }
+
+    await job.deleteOne();
+
+    res.status(200).json({ message: "Job deleted successfully" });
+  } catch (error) {
+    console.error("Delete job error:", error);
+    res.status(500).json({ message: "Failed to delete job" });
+  }
+};
