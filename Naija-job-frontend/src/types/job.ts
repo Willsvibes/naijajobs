@@ -13,5 +13,5 @@ export interface Job{
    duration: string,
    experienceLevel?:string,
    postedDate?:string,
-
+   createdBy: string;
 }

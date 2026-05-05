@@ -12,18 +12,43 @@ import {
   Building2,
   ArrowRight,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { useAuthStore } from "../store/useAuthStore";
+import api from "../api/axiosInstance";
+import { toast } from "sonner";
 
 interface Props {
   job: Job;
   onEmploymentTypeClick?: (type: string) => void;
   currentFilterType?: string;
+  onDelete?: () => void;
 }
 
-const JobCard = ({ job, onEmploymentTypeClick, currentFilterType }: Props) => {
+const JobCard = ({ job, onEmploymentTypeClick, currentFilterType, onDelete }: Props) => {
   const [favorited, setFavorited] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const user = useAuthStore((state) => state.user);
+
+  const isAuthorized = user && (user.role === "admin" || user.id === job.createdBy);
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    
+    setIsDeleting(true);
+    try {
+      await api.delete(`/jobs/${job.id}`);
+      toast.success("Job deleted successfully");
+      onDelete?.();
+    } catch (error: any) {
+      console.error("Delete job error:", error);
+      toast.error(error.response?.data?.message || "Failed to delete job");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Employment type styles for the badge
   const employmentTypeStyles: Record<
@@ -107,20 +132,38 @@ const JobCard = ({ job, onEmploymentTypeClick, currentFilterType }: Props) => {
             </div>
           </div>
 
-          {/* Favorite button */}
-          <button
-            onClick={() => setFavorited(!favorited)}
-            className="p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 hover:scale-110 active:scale-95"
-          >
-            <Heart 
-              size={20} 
-              className={`transition-all duration-300 ${
-                favorited 
-                  ? "text-red-400 fill-red-400 scale-110" 
-                  : "text-slate-500 group-hover:text-slate-400"
-              }`} 
-            />
-          </button>
+          {/* Action buttons */}
+          <div className="flex items-center gap-1">
+            {/* Delete button (only for admin or creator) */}
+            {isAuthorized && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete();
+                }}
+                disabled={isDeleting}
+                className="p-2 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Delete Job"
+              >
+                <Trash2 size={18} className={isDeleting ? "animate-pulse" : ""} />
+              </button>
+            )}
+
+            {/* Favorite button */}
+            <button
+              onClick={() => setFavorited(!favorited)}
+              className="p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 hover:scale-110 active:scale-95"
+            >
+              <Heart 
+                size={20} 
+                className={`transition-all duration-300 ${
+                  favorited 
+                    ? "text-red-400 fill-red-400 scale-110" 
+                    : "text-slate-500 group-hover:text-slate-400"
+                }`} 
+              />
+            </button>
+          </div>
         </div>
 
         {/* Job title */}

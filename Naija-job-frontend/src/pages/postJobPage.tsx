@@ -104,7 +104,7 @@ const PostJob = () => {
           className="bg-slate-900/80 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden backdrop-blur-xl"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-8">
+          <div className="bg-linear-to-r from-amber-500 to-orange-500 p-8">
             <h2 className="text-3xl font-black text-black">Post a Hustle</h2>
             <p className="text-black/70 font-medium mt-1 text-sm">
               Connecting talent with opportunities across Nigeria
@@ -296,7 +296,7 @@ const PostJob = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-[2] bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl transition shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 text-sm"
+                className="flex-2 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl transition shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 text-sm"
               >
                 {loading ? "Publishing..." : "Post Hustle 🚀"}
               </button>

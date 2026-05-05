@@ -7,9 +7,10 @@ import FilterModal, { type FilterValues } from "../Ui/filterModal";
 
 interface Props {
   jobs: Job[]; // passed from Dashboard
+  onRefresh?: () => void;
 }
 
-const EmployeeDashboard: React.FC<Props> = ({ jobs }) => {
+const EmployeeDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
   const [search, setSearch] = useState("");
   const [showFilter, setShowFilter] = useState(false);
 
@@ -170,6 +171,7 @@ const EmployeeDashboard: React.FC<Props> = ({ jobs }) => {
                 job={job}
                 currentFilterType={employmentTypeFilter}
                 onEmploymentTypeClick={toggleEmploymentType}
+                onDelete={onRefresh}
               />
             ))
           ) : (

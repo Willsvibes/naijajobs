@@ -16,6 +16,7 @@ interface ApiJob {
   jobType: string;
   category: string;
   description?: string;
+  createdBy: string;
 }
 
 const Dashboard = () => {
@@ -46,6 +47,7 @@ const Dashboard = () => {
         employmentType: job.jobType,
         type: job.category,
         description: job.description ?? "",
+        createdBy: job.createdBy,
       }));
 
       setJobs(formattedJobs);
@@ -86,9 +88,9 @@ const Dashboard = () => {
   if (!user) return null;
 
   return user.role === "employer" ? (
-    <EmployerDashboard jobs={jobs} />
+    <EmployerDashboard jobs={jobs} onRefresh={fetchJobs} />
   ) : (
-    <EmployeeDashboard jobs={jobs} />
+    <EmployeeDashboard jobs={jobs} onRefresh={fetchJobs} />
   );
 };
 
