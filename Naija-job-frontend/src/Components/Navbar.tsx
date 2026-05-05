@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
-import { Home, PlusCircle, Sparkles, User2Icon, Bell, X, Menu, Briefcase } from 'lucide-react';
+import { Home, PlusCircle, User2Icon, Bell, ChevronRight } from 'lucide-react';
 import Logo from './Logo';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../api/axiosInstance';
- import LogoutButton from '../pages/Logout';
+import LogoutButton from '../pages/Logout';
 
 const allNavItems = [
   {
@@ -36,7 +36,6 @@ const allNavItems = [
 const Navbar: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -46,13 +45,11 @@ const Navbar: React.FC = () => {
         const res = await api.get("/notifications");
         setUnreadCount(res.data.unreadCount);
       } catch {
-        // silently fail — don't block the UI
+        // silently fail
       }
     };
 
     fetchUnread();
-
-    // Poll every 60 seconds for new notifications
     const interval = setInterval(fetchUnread, 60000);
     return () => clearInterval(interval);
   }, [user]);
@@ -61,144 +58,86 @@ const Navbar: React.FC = () => {
 
   const navItems = allNavItems.filter((item) => item.roles.includes(user.role));
 
-  const NavContent = ({ onClose }: { onClose?: () => void }) => (
-    <>
-      <Logo />
-      <menu className="flex flex-col gap-2 flex-1">
-        {navItems.map((item) => (
-          <NavLink
-            to={item.link}
-            key={item.name}
-            onClick={onClose}
-            className={({ isActive }) =>
-              `group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 relative overflow-hidden ${
-                isActive
-                  ? "bg-linear-to-r from-amber-500 to-yellow-600 text-black shadow-lg shadow-amber-500/25"
-                  : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {!isActive && (
-                  <div className="absolute inset-0 bg-linear-to-r from-amber-500/0 to-yellow-500/0 group-hover:from-amber-500/10 group-hover:to-yellow-500/10 transition-all duration-300" />
-                )}
-                <div className="relative z-10 flex items-center gap-4 w-full">
-                  <div className="relative">
-                    <item.icon
-                      size={20}
-                      className={`transition-all duration-300 ${
-                        isActive
-                          ? "text-black"
-                          : "text-slate-400 group-hover:text-amber-400"
-                      }`}
-                    />
-                    {/* Unread badge on bell icon */}
-                    {item.name === "Notifications" && unreadCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </span>
-                    )}
-                  </div>
-                  <span
-                    className={`font-medium text-sm ${isActive ? "text-black" : ""}`}
-                  >
-                    {item.name}
-                  </span>
-                  {isActive && (
-                    <div className="ml-auto">
-                      <Sparkles size={14} className="text-black animate-pulse" />
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </NavLink>
-        ))}
-      </menu>
-
-     
-<div className="mt-auto pt-6 border-t border-slate-700/50 flex flex-col gap-2">
-  <LogoutButton />
-  <div className="px-4 py-3 rounded-xl bg-linear-to-br from-slate-800/50 to-slate-700/50 border border-slate-600/30">
-    <p className="text-xs text-slate-400 mb-1">Need help?</p>
-    <button className="text-sm text-amber-400 hover:text-amber-300 font-medium transition-colors flex items-center gap-1">
-      Contact Support
-      <span className="text-xs">→</span>
-    </button>
-  </div>
-</div>
-    </>
-  );
-
   return (
-    <>
-      {/* ── Desktop Sidebar ─────────────────────────── */}
-      <div className="col-span-1 h-screen xl:py-5 lg:py-2 xl:pl-5 lg:pl-2 hidden sm:block sticky top-0">
-        <nav className="h-full xl:rounded-3xl lg:rounded-2xl w-60 bg-linear-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl flex flex-col xl:py-6 py-5 xl:px-5 px-4">
-          <NavContent />
-        </nav>
-      </div>
+    <div className="hidden sm:block h-screen sticky top-0 w-72 bg-slate-950 border-r border-slate-800/60 shadow-[4px_0_24px_rgba(0,0,0,0.3)]">
+      <nav className="h-full flex flex-col pt-8 pb-6 px-6">
+        <div className="mb-10 px-2">
+          <Logo />
+        </div>
 
-      {/* ── Mobile Top Bar ──────────────────────────── */}
-      <div className="sm:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50">
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
-            <Briefcase size={16} className="text-black" />
+        <div className="flex-1 space-y-1.5">
+          <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">
+            Main Menu
+          </p>
+          {navItems.map((item) => (
+            <NavLink
+              to={item.link}
+              key={item.name}
+              className={({ isActive }) =>
+                `group flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 relative ${
+                  isActive
+                    ? "bg-linear-to-r from-amber-500/10 to-transparent text-amber-400 border-l-2 border-amber-500"
+                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-900/50"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative">
+                      <item.icon
+                        size={20}
+                        className={`transition-colors duration-300 ${
+                          isActive ? "text-amber-400" : "text-slate-500 group-hover:text-amber-400"
+                        }`}
+                      />
+                      {item.name === "Notifications" && unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-950">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium text-[15px]">{item.name}</span>
+                  </div>
+                  
+                  <ChevronRight 
+                    size={16} 
+                    className={`transition-all duration-300 ${
+                      isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+                    }`} 
+                  />
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+
+        <div className="mt-auto pt-6 border-t border-slate-800/60">
+          {/* User Profile Section */}
+          <div className="mb-6 px-2">
+            <div className="p-4 rounded-2xl bg-linear-to-br from-slate-900 to-slate-800 border border-slate-800/50 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-linear-to-tr from-amber-500 to-yellow-500 flex items-center justify-center text-black font-bold shadow-lg shadow-amber-500/20">
+                {user.name.charAt(0)}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold text-white truncate">{user.name}</span>
+                <span className="text-xs text-slate-500 capitalize">{user.role}</span>
+              </div>
+            </div>
           </div>
-          <span className="text-white font-black text-sm">NaijaJobs</span>
+
+          <LogoutButton />
+          
+          <div className="mt-4 px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
+            <p className="text-[10px] text-slate-500 mb-1">Need help?</p>
+            <button className="text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors flex items-center gap-1">
+              Contact Support
+              <span className="text-[10px]">→</span>
+            </button>
+          </div>
         </div>
-
-        <div className="flex items-center gap-3">
-          {/* Bell with badge */}
-          <NavLink to="/notifications" className="relative">
-            <Bell size={22} className="text-slate-400" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </NavLink>
-
-          {/* Burger */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-          >
-            <Menu size={22} />
-          </button>
-        </div>
-      </div>
-
-      {/* ── Mobile Drawer Overlay ───────────────────── */}
-      {drawerOpen && (
-        <div
-          className="sm:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-          onClick={() => setDrawerOpen(false)}
-        />
-      )}
-
-      {/* ── Mobile Drawer ───────────────────────────── */}
-      <div
-        className={`sm:hidden fixed top-0 left-0 h-full w-72 z-50 bg-linear-to-br from-slate-900 to-slate-800 border-r border-slate-700/50 shadow-2xl flex flex-col py-6 px-5 transition-transform duration-300 ease-in-out ${
-          drawerOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* Close button */}
-        <button
-          onClick={() => setDrawerOpen(false)}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-        >
-          <X size={20} />
-        </button>
-
-        <NavContent onClose={() => setDrawerOpen(false)} />
-      </div>
-
-      {/* ── Mobile spacer so content isn't hidden under top bar ── */}
-      <div className="sm:hidden h-14" />
-    </>
+      </nav>
+    </div>
   );
 };
 

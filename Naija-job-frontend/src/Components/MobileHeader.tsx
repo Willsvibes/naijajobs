@@ -1,30 +1,41 @@
-import React, { useState } from 'react';
-import { LogOut, Menu, X, Home, PlusCircle, User2Icon } from 'lucide-react';
-import { useNavigate, NavLink } from 'react-router';
-import { toast } from 'sonner';
+import React, { useEffect, useState } from 'react';
+import { Menu, X, Home, PlusCircle, User2Icon, Bell } from 'lucide-react';
+import { NavLink } from 'react-router';
 import Logo from './Logo';
 import { useAuthStore } from '../store/useAuthStore';
 import { AnimatePresence, motion } from 'framer-motion';
+import api from '../api/axiosInstance';
+import LogoutButton from '../pages/Logout';
 
 const MobileHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-  const logout = useAuthStore((state) => state.logout);
+  const [unreadCount, setUnreadCount] = useState(0);
   const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUnread = async () => {
+      try {
+        const res = await api.get("/notifications");
+        setUnreadCount(res.data.unreadCount);
+      } catch {
+        // silently fail
+      }
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   if (!user) return null;
 
-  const handleLogout = () => {
-    logout();
-    navigate('/auth/login');
-    toast.success('Logged out successfully');
-    setIsOpen(false);
-  };
-
   const navItems = [
-    { name: "Dashboard", link: "/dashboard", icon: Home, roles: ["employee", "employer"] },
+    { name: "Dashboard", link: "/dashboard", icon: Home, roles: ["employee", "employer", "admin"] },
     { name: "Post Job", link: "/post", icon: PlusCircle, roles: ["employer"] },
-    { name: "Profile", link: "/profile", icon: User2Icon, roles: ["employee", "employer"] }
+    { name: "Notifications", link: "/notifications", icon: Bell, roles: ["employee", "employer", "admin"] },
+    { name: "Profile", link: "/profile", icon: User2Icon, roles: ["employee", "employer", "admin"] }
   ].filter(item => item.roles.includes(user.role));
 
   return (
@@ -34,12 +45,23 @@ const MobileHeader: React.FC = () => {
           <Logo />
         </div>
         
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 transition-colors"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-4">
+          <NavLink to="/notifications" className="relative p-2 text-slate-400 hover:text-amber-400 transition-colors">
+            <Bell size={22} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-950">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </NavLink>
+          
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 transition-colors"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -57,27 +79,32 @@ const MobileHeader: React.FC = () => {
                   to={item.link}
                   onClick={() => setIsOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-4 px-4 py-4 rounded-xl transition-all ${
+                    `flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
                       isActive
                         ? "bg-linear-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border border-amber-500/30"
                         : "text-slate-400 hover:bg-slate-900"
                     }`
                   }
                 >
-                  <item.icon size={20} />
-                  <span className="font-medium">{item.name}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <item.icon size={20} />
+                      {item.name === "Notifications" && unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-950">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium">{item.name}</span>
+                  </div>
                 </NavLink>
               ))}
               
               <div className="h-px bg-slate-800 my-2" />
               
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-4 px-4 py-4 rounded-xl text-red-400 hover:bg-red-500/10 transition-all w-full text-left"
-              >
-                <LogOut size={20} />
-                <span className="font-medium">Logout</span>
-              </button>
+              <div onClick={() => setIsOpen(false)}>
+                <LogoutButton />
+              </div>
 
               <div className="mt-4 p-4 rounded-2xl bg-linear-to-br from-slate-900 to-slate-800 border border-slate-700/50">
                 <div className="flex items-center gap-3">
