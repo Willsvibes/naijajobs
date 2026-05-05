@@ -1,49 +1,62 @@
 import { Request, Response } from "express";
 import { User } from "../models/User";
+import { Notification } from "../models/Notification";
 import bcrypt from "bcryptjs";
 import jwt, { Secret } from "jsonwebtoken";
 import { signAccessToken, signRefreshToken } from "../utils/jwt";
 
 export const register = async (req: Request, res: Response) => {
-	try {
-		const { name, email, password, role } = req.body;
+  try {
+    const { name, email, password, role } = req.body;
 
-		// Input validation
-		if (!name || !email || !password) {
-			return res.status(400).json({
-				message: "Name, email, and password are required",
-			});
-		}
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "Name, email, and password are required",
+      });
+    }
 
-		const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-		if (existingUser) {
-			return res.status(400).json({
-				message: "User already exists",
-			});
-		}
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-		const newUser = await User.create({
-			name,
-			email,
-			password: hashedPassword,
-			role: role || "employee",
-		});
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "employee",
+    });
 
-		res.status(201).json({
-			id: newUser._id,
-			name: newUser.name,
-			email: newUser.email,
-			role: newUser.role,
-		});
-	} catch (error) {
-		console.error("Register error:", error);
-		res.status(500).json({ message: "Internal server error" });
-	}
+    // Notify all admins that a new user registered
+    const admins = await User.find({ role: "admin" }).select("_id");
+
+    if (admins.length > 0) {
+      const notifications = admins.map((admin) => ({
+        recipient: admin._id,
+        sender: newUser._id,
+        type: "new_user_registered" as const,
+        message: `New user registered: ${name} (${role || "employee"})`,
+      }));
+
+      await Notification.insertMany(notifications);
+    }
+
+    res.status(201).json({
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    });
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
+
 export const login = async (req: Request, res: Response) => {
 	try {
 		const { email, password } = req.body;

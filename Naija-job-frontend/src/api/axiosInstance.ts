@@ -89,7 +89,7 @@ api.interceptors.response.use(
 
         //  Refresh failed → logout
         localStorage.removeItem("auth-storage");
-        window.location.href = "/auth/login";
+        window.location.href = "/";
 
         return Promise.reject(err);
       } finally {

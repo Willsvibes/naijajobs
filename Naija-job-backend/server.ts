@@ -9,6 +9,7 @@ import jobRouter from "./routes/jobs";
 import { allowRoles } from "./middleware/allowRoles";
 import adminRouter from "./routes/adminRoutes";
 import cookieParser from "cookie-parser";
+import { applicationRouter, notificationRouter } from "./routes/applicationRoutes";
 
 configDotenv();
 
@@ -50,6 +51,12 @@ app.use("/api/jobs", authMiddleware, jobRouter);
 
 // Profile
 app.use("/api/profile", profileRouter);
+
+// Protected — applications & notifications
+
+
+app.use("/api/applications", applicationRouter);
+app.use("/api/notifications", notificationRouter);
 
 // Admin
 app.use("/api/admin", authMiddleware, allowRoles("admin"), adminRouter);

@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { Job } from "../models/Job";
+import { Notification } from "../models/Notification";
+import { User } from "../models/User";
 
 export const postJob = async (req: Request, res: Response) => {
   try {
@@ -9,9 +11,10 @@ export const postJob = async (req: Request, res: Response) => {
 
     const { title, company, jobType, category, location, duration, skills, salary, description } = req.body;
 
-    // Validate required fields
     if (!title || !company || !category || !location || !salary) {
-      return res.status(400).json({ message: "Title, company, category, location, and salary are required" });
+      return res.status(400).json({
+        message: "Title, company, category, location, and salary are required",
+      });
     }
 
     const job = await Job.create({
@@ -26,6 +29,21 @@ export const postJob = async (req: Request, res: Response) => {
       description,
       createdBy: req.user._id,
     });
+
+    // Notify all admins that a new job was posted
+    const admins = await User.find({ role: "admin" }).select("_id");
+
+    if (admins.length > 0) {
+      const notifications = admins.map((admin) => ({
+        recipient: admin._id,
+        sender: req.user!._id,
+        job: job._id,
+        type: "new_job_posted" as const,
+        message: `${req.user!.name} posted a new job: "${title}" at ${company}`,
+      }));
+
+      await Notification.insertMany(notifications);
+    }
 
     res.status(201).json(job);
   } catch (error) {
@@ -43,10 +61,8 @@ export const getJobs = async (req: Request, res: Response) => {
     let jobs;
 
     if (req.user.role === "employer") {
-      // Employers see only their own listings
       jobs = await Job.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
     } else {
-      // Employees see all available jobs
       jobs = await Job.find().sort({ createdAt: -1 });
     }
 
@@ -72,12 +88,12 @@ export const getOne = async (req: Request, res: Response) => {
   }
 };
 
-
 export const deleteJob = async (req: Request, res: Response) => {
-    try {
+  try {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+
     const job = await Job.findById(req.params.id);
 
     if (!job) {
@@ -92,7 +108,6 @@ export const deleteJob = async (req: Request, res: Response) => {
     }
 
     await job.deleteOne();
-
     res.status(200).json({ message: "Job deleted successfully" });
   } catch (error) {
     console.error("Delete job error:", error);
