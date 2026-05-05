@@ -189,7 +189,7 @@ const JobDetails = () => {
         {/* Application Action */}
         <div className="sticky bottom-6">
           <button 
-            onClick={() => navigate("/job/apply")}
+            onClick={() => navigate(`/job/apply/${id}`)}
             className="w-full bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-5 rounded-2xl shadow-2xl shadow-amber-500/20 transition-all duration-300 text-xl flex items-center justify-center gap-3 active:scale-[0.98]"
           >
             Apply for this position
