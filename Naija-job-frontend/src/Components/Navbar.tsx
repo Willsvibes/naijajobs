@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
-import { Home, PlusCircle, User2Icon, Bell, ChevronRight } from 'lucide-react';
+import { Home, PlusCircle, User2Icon, Bell, ChevronRight, Settings } from 'lucide-react';
 import Logo from './Logo';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../api/axiosInstance';
@@ -31,6 +31,12 @@ const allNavItems = [
     icon: User2Icon,
     roles: ["employee", "employer", "admin"],
   },
+  {
+  name: "Settings",
+  link: "/settings",
+  icon: Settings, 
+  roles: ["employee", "employer", "admin"],
+}
 ];
 
 const Navbar: React.FC = () => {

@@ -11,6 +11,7 @@ import Dashboard from "../Components/dashboard";
 import Signup from "../pages/signUp";
 import PrivateRoute from "./privateRoute";
 import Notifications from "../Components/notification";
+import Settings from "../pages/settings";
 const AppRoutes = () => (
   <PrivateRoute>
     <MainLayout />
@@ -40,7 +41,8 @@ const router = createBrowserRouter([
     children: [
       { path: "dashboard", Component: Dashboard },
       { path: "profile", Component: Profile },
-      { path: "notifications", Component: Notifications }, // 👈 add this
+      { path: "notifications", Component: Notifications }, 
+      { path: "settings", Component: Settings },
       {
         path: "post",
         element: (
