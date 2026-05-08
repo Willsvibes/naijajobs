@@ -298,7 +298,7 @@ const PostJob = () => {
                 disabled={loading}
                 className="flex-2 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl transition shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 text-sm"
               >
-                {loading ? "Publishing..." : "Post Hustle 🚀"}
+                {loading ? "Publishing..." : "Post Hustle "}
               </button>
             </div>
           </div>

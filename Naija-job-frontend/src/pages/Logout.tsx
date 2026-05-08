@@ -32,7 +32,7 @@ const LogoutButton = () => {
         className="text-slate-400 group-hover:text-red-400 transition-colors duration-300"
       />
       <span className="font-medium text-sm">
-        {loading ? "Logging out..." : "Logout"}
+        {loading ? "Signing out..." : "Sign Out"}
       </span>
     </button>
   );
