@@ -22,7 +22,7 @@ const CTASection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="p-12 md:p-20 rounded-[32px] bg-linear-to-b from-white/4 to-white/1 border border-white/6 backdrop-blur-sm"
+          className="p-12 md:p-20 rounded-4xl bg-linear-to-b from-white/4 to-white/1 border border-white/6 backdrop-blur-sm"
         >
           <h2 className="text-4xl md:text-6xl font-extrabold tracking-[-0.03em] mb-6 leading-tight">
             Ready to make

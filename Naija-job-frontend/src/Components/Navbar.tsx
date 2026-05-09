@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
 import { Home, PlusCircle, User2Icon, Bell, ChevronRight, Settings } from 'lucide-react';
-import Logo from './Logo';
+import { Logo } from '../Ui/logo';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../api/axiosInstance';
 import LogoutButton from '../pages/Logout';
@@ -68,7 +68,7 @@ const Navbar: React.FC = () => {
     <div className="hidden sm:block h-screen sticky top-0 w-72 bg-slate-950 border-r border-slate-800/60 shadow-[4px_0_24px_rgba(0,0,0,0.3)]">
       <nav className="h-full flex flex-col pt-8 pb-6 px-6">
         <div className="mb-10 px-2">
-          <Logo />
+       <Logo />
         </div>
 
         <div className="flex-1 space-y-1.5">

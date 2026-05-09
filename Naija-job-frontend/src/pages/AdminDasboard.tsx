@@ -64,6 +64,16 @@ const StatCard = ({ label, value, icon: Icon, color, sub }: any) => (
   </div>
 );
 
+const safeDate = (date?: string) => {
+  if (!date) return "Unknown date";
+
+  const parsed = new Date(date);
+
+  return isNaN(parsed.getTime())
+    ? "Unknown date"
+    : formatDistanceToNow(parsed, { addSuffix: true });
+};
+
 // ── Main Component ───────────────────────────
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -172,17 +182,25 @@ const AdminDashboard = () => {
     });
   };
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.email.toLowerCase().includes(userSearch.toLowerCase())
-  );
+const filteredUsers = users.filter((u) => {
+  const name = u.name || "";
+  const email = u.email || "";
 
-  const filteredJobs = jobs.filter(
-    (j) =>
-      j.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
-      j.company.toLowerCase().includes(jobSearch.toLowerCase())
+  return (
+    name.toLowerCase().includes(userSearch.toLowerCase()) ||
+    email.toLowerCase().includes(userSearch.toLowerCase())
   );
+});
+
+const filteredJobs = jobs.filter((j) => {
+  const title = j.title || "";
+  const company = j.company || "";
+
+  return (
+    title.toLowerCase().includes(jobSearch.toLowerCase()) ||
+    company.toLowerCase().includes(jobSearch.toLowerCase())
+  );
+});
 
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "overview",      label: "Overview",      icon: BarChart3   },
@@ -274,7 +292,7 @@ const AdminDashboard = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white font-medium">{n.message}</p>
                       <p className="text-xs text-slate-500 mt-1">
-                        {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                        {safeDate(n.createdAt)}
                       </p>
                     </div>
                     {!n.read && (
@@ -316,15 +334,18 @@ const AdminDashboard = () => {
                 >
                   {/* Avatar */}
                   <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                    {user.name.charAt(0).toUpperCase()}
+                   {user.name?.charAt(0).toUpperCase() || "U"}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-white font-semibold text-sm">{user.name}</p>
+                      <p className="text-white font-semibold text-sm"><p className="text-white font-semibold text-sm">
+                        {user.name || "Unknown User"}
+                      </p>
+                      </p>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border capitalize ${roleColors[user.role]}`}>
-                        {user.role}
+                        {user.role || "N/A"}
                       </span>
                       {user.banned && (
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
@@ -332,12 +353,14 @@ const AdminDashboard = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-slate-500 text-xs mt-0.5 truncate">{user.email}</p>
+                    <p className="text-slate-500 text-xs mt-0.5 truncate"><p className="text-slate-500 text-xs mt-0.5 truncate">
+                      {user.email || "No email"}
+                  </p>
+                  </p>
                     <p className="text-slate-600 text-xs mt-0.5">
-                      Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                      Joined {safeDate(user.createdAt)}
                     </p>
                   </div>
-
                   {/* Actions */}
                   {user.role !== "admin" && (
                     <div className="flex items-center gap-1 shrink-0">
@@ -408,23 +431,30 @@ const AdminDashboard = () => {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-white font-semibold text-sm">{job.title}</p>
+                      <p className="text-white font-semibold text-sm"><p className="text-white font-semibold text-sm">
+                        {job.title || "Untitled Job"}
+                    </p>
+                    </p>
                       {job.jobType && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                          {job.jobType}
+                          {job.jobType || "N/A"}
                         </span>
                       )}
                     </div>
-                    <p className="text-slate-400 text-xs mt-0.5">{job.company} · {job.location}</p>
+                    <p className="text-slate-400 text-xs mt-0.5">{job.company} · {job.location || "Location not specified"}</p>
                     <div className="flex items-center gap-3 mt-1">
                       <p className="text-emerald-400 text-xs font-semibold">
-                        ₦{job.salary.toLocaleString()}/mo
+                        <p className="text-emerald-400 text-xs font-semibold">
+                          ₦{job.salary?.toLocaleString?.() || "0"}/mo
+                      </p>
                       </p>
                       <p className="text-slate-600 text-xs">
-                        by {job.createdBy?.name}
+                        by {job.createdBy?.name || "Unknown Employer"}
                       </p>
                       <p className="text-slate-600 text-xs">
-                        {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
+                        {job.createdAt? 
+                        safeDate(job.createdAt)
+                        : "Unknown date"}
                       </p>
                     </div>
                   </div>
@@ -472,7 +502,7 @@ const AdminDashboard = () => {
                     <p className="text-sm text-white font-medium">{n.message}</p>
                     <p className="text-xs text-slate-500 mt-1 capitalize">{n.type.replace(/_/g, " ")}</p>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                      {n.createdAt ? safeDate(n.createdAt) : "Unknown date"}
                     </p>
                   </div>
                   {!n.read && (

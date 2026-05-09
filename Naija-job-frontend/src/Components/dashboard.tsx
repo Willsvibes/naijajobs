@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import EmployeeDashboard from "../pages/EmployeeDashboard";
 import EmployerDashboard from "../pages/EmployerDashboard";
+import AdminDashboard from "../pages/AdminDasboard";
 import { useAuthStore } from "../store/useAuthStore";
 import type { Job } from "../types/job";
 import api from "../api/axiosInstance";
@@ -89,6 +90,8 @@ const Dashboard = () => {
 
   return user.role === "employer" ? (
     <EmployerDashboard jobs={jobs} onRefresh={fetchJobs} />
+  ) : user.role === "admin" ? (
+    <AdminDashboard  />
   ) : (
     <EmployeeDashboard jobs={jobs} onRefresh={fetchJobs} />
   );

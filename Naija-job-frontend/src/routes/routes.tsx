@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         ),
       },
       { path: "job/:id", Component: JobDetails },
-      { path: "job/apply/:jobId", Component: ApplicationForm }, // 👈 fixed to include :jobId
+      { path: "job/apply/:jobId", Component: ApplicationForm }, 
     ],
   },
   // Catch-all

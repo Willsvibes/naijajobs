@@ -6,7 +6,7 @@ import { Filter, Briefcase, Clock, PenTool, FileText, Search, Sparkles } from "l
 import FilterModal, { type FilterValues } from "../Ui/filterModal";
 
 interface Props {
-  jobs: Job[]; // passed from Dashboard
+  jobs: Job[];
   onRefresh?: () => void;
 }
 
