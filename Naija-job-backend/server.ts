@@ -1,15 +1,15 @@
 import { configDotenv } from "dotenv";
 import express from "express";
 import cors from "cors";
-import { authRouter } from "./routes/auth";
+import { authRouter } from "./routes/auth.js";
 import mongoose from "mongoose";
-import { authMiddleware } from "./middleware/auth";
-import { profileRouter } from "./routes/profile";
-import jobRouter from "./routes/jobs";
-import { allowRoles } from "./middleware/allowRoles";
-import adminRouter from "./routes/adminRoutes";
+import { authMiddleware } from "./middleware/auth.js";
+import { profileRouter } from "./routes/profile.js";
+import jobRouter from "./routes/jobs.js";
+import { allowRoles } from "./middleware/allowRoles.js";
+import adminRouter from "./routes/adminRoutes.js";
 import cookieParser from "cookie-parser";
-import { applicationRouter, notificationRouter } from "./routes/applicationRoutes";
+import { applicationRouter, notificationRouter } from "./routes/applicationRoutes.js";
 
 configDotenv();
 

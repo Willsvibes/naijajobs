@@ -1,4 +1,4 @@
-import { login, logout, register, refreshAccessToken } from "../controllers/authController";
+import { login, logout, register, refreshAccessToken } from "../controllers/authController.js";
 import { configDotenv } from "dotenv";
 import { Router } from "express";
 

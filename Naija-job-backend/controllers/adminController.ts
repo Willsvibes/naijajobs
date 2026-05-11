@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { User } from "../models/User";
-import { Job } from "../models/Job";
-import { Application } from "../models/Application";
-import { Notification } from "../models/Notification";
+import { User } from "../models/User.js";
+import { Job } from "../models/Job.js";
+import { Application } from "../models/Application.js";
+// import { Notification } from "../models/Notification.js";
 
 // ── GET /admin/stats ─────────────────────────
 export const getAdminStats = async (req: Request, res: Response) => {

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postJob, getJobs, getOne, deleteJob } from "../controllers/jobControllers";
+import { postJob, getJobs, getOne, deleteJob } from "../controllers/jobControllers.js";
 
 
 

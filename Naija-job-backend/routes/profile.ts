@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware } from "../middleware/auth.js";
 import {
   getProfile,
   updateProfile,
   changePassword,
   deleteAccount,
-} from "../controllers/profileController";
+} from "../controllers/profileController.js";
 
 export const profileRouter = Router();
 

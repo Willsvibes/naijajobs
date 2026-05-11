@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { Job } from "../models/Job";
-import { Application } from "../models/Application";
-import { Notification } from "../models/Notification";
+import { Job } from "../models/Job.js";
+import { Application } from "../models/Application.js";
+import { Notification } from "../models/Notification.js";
 
 // ─────────────────────────────────────────────
 // POST /applications/:jobId

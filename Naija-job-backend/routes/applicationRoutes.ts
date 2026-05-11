@@ -2,19 +2,19 @@
 import { configDotenv } from "dotenv";
 import { Router } from "express";
 
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware } from "../middleware/auth.js";
 import {
   applyToJob,
   getApplicationsForJob,
   getMyApplications,
   getReceivedOffers,
   updateApplicationStatus,
-} from "../controllers/applicationControllers";
+} from "../controllers/applicationControllers.js";
 import {
   getNotifications,
   markNotificationRead,
   markAllNotificationsRead,
-} from "../controllers/applicationControllers";
+} from "../controllers/applicationControllers.js";
 
 export const applicationRouter = Router();
 configDotenv()

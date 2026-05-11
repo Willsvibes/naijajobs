@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { Job } from "../models/Job";
-import { Notification } from "../models/Notification";
-import { User } from "../models/User";
+import { Job } from "../models/Job.js";
+import { Notification } from "../models/Notification.js";
+import { User } from "../models/User.js";
 
 export const postJob = async (req: Request, res: Response) => {
   try {
