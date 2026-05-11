@@ -4,17 +4,21 @@ import { useNavigate } from "react-router";
 import api from "../api/axiosInstance";
 import useToastMessage from "../Hooks/useToastMesage";
 import { z } from "zod";
+import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { MAX_IMAGE_UPLOADS, uploadImageToCloudinary } from "../api/cloudinaryUpload";
+import { serviceCategories } from "../constants/serviceCategories";
 
 const jobSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  company: z.string().min(1, "Company is required"),
+  company: z.string().min(1, "Client name is required"),
   category: z.string().min(1, "Category is required"),
   location: z.string().min(1, "Location is required"),
-  salary: z.coerce.number().min(1, "Salary is required"),
+  salary: z.coerce.number().min(1, "Budget is required"),
   duration: z.string().min(1, "Duration is required"),
   description: z.string().optional(),
   jobType: z.enum(["Full-time", "Part-time", "Freelance", "Contract"]).optional(),
   skills: z.array(z.string()).optional(),
+  workImages: z.array(z.string().min(1)).min(1, "At least one work image is required"),
 });
 
 const inputClass =
@@ -31,12 +35,14 @@ const PostJob = () => {
     location: "",
     category: "",
     skills: [] as string[],
+    workImages: [] as string[],
     jobType: "",
     duration: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [uploadingWorkImages, setUploadingWorkImages] = useState(false);
   const [skillInput, setSkillInput] = useState("");
 
   const navigate = useNavigate();
@@ -63,10 +69,48 @@ const PostJob = () => {
     setForm({ ...form, skills: form.skills.filter((s) => s !== skillToRemove) });
   };
 
+  const removeWorkImage = (index: number) => {
+    setForm({
+      ...form,
+      workImages: form.workImages.filter((_, imageIndex) => imageIndex !== index),
+    });
+  };
+
+  const handleWorkImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (files.length === 0) return;
+
+    if (form.workImages.length + files.length > MAX_IMAGE_UPLOADS) {
+      toastError(`You can upload up to ${MAX_IMAGE_UPLOADS} images.`);
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setUploadingWorkImages(true);
+      const uploadedUrls = await Promise.all(files.map(uploadImageToCloudinary));
+      setForm((prev) => ({
+        ...prev,
+        workImages: [...prev.workImages, ...uploadedUrls].filter(Boolean),
+      }));
+      setErrors({ ...errors, workImages: "" });
+      toastSuccess("Images uploaded successfully");
+    } catch (error: any) {
+      toastError(error.message || "Failed to upload images");
+    } finally {
+      setUploadingWorkImages(false);
+      event.target.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = { ...form, salary: Number(form.salary) };
+    const payload = {
+      ...form,
+      salary: Number(form.salary),
+      workImages: form.workImages.map((image) => image.trim()).filter(Boolean),
+    };
     const result = jobSchema.safeParse(payload);
 
     if (!result.success) {
@@ -105,9 +149,9 @@ const PostJob = () => {
         >
           {/* Header */}
           <div className="bg-linear-to-r from-amber-500 to-orange-500 p-8">
-            <h2 className="text-3xl font-black text-black">Post a Hustle</h2>
+            <h2 className="text-3xl font-black text-black">Post a Service Request</h2>
             <p className="text-black/70 font-medium mt-1 text-sm">
-              Connecting talent with opportunities across Nigeria
+              Show providers what you need done and the budget for it.
             </p>
           </div>
 
@@ -121,24 +165,24 @@ const PostJob = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className={labelClass}>Job Title *</label>
+                  <label className={labelClass}>Service Title *</label>
                   <input
                     name="title"
                     value={form.title}
                     onChange={handleInput}
-                    placeholder="e.g. Senior Frontend Engineer"
+                    placeholder="e.g. Fix leaking kitchen sink"
                     className={inputClass}
                   />
                   {errors.title && <p className={errorClass}>{errors.title}</p>}
                 </div>
 
                 <div>
-                  <label className={labelClass}>Company *</label>
+                  <label className={labelClass}>Client / Business Name *</label>
                   <input
                     name="company"
                     value={form.company}
                     onChange={handleInput}
-                    placeholder="e.g. Flutterwave"
+                    placeholder="e.g. Ada Homes"
                     className={inputClass}
                   />
                   {errors.company && <p className={errorClass}>{errors.company}</p>}
@@ -146,12 +190,12 @@ const PostJob = () => {
               </div>
 
               <div>
-                <label className={labelClass}>Job Description</label>
+                <label className={labelClass}>Request Description</label>
                 <textarea
                   name="description"
                   value={form.description}
                   onChange={handleInput}
-                  placeholder="Role responsibilities, requirements, and company culture..."
+                  placeholder="Describe the work, current issue, site access, and anything the provider should know..."
                   rows={5}
                   className={`${inputClass} resize-none`}
                 />
@@ -169,13 +213,13 @@ const PostJob = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className={labelClass}>Salary (₦) *</label>
+                  <label className={labelClass}>Budget (NGN) *</label>
                   <input
                     type="number"
                     name="salary"
                     value={form.salary}
                     onChange={handleInput}
-                    placeholder="Monthly pay"
+                    placeholder="Your budget"
                     className={inputClass}
                   />
                   {errors.salary && <p className={errorClass}>{errors.salary}</p>}
@@ -194,26 +238,25 @@ const PostJob = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Job Category *</label>
+                  <label className={labelClass}>Service Category *</label>
                   <select
                     name="category"
                     value={form.category}
                     onChange={handleInput}
                     className={inputClass}
                   >
-                    <option value="">Select Category</option>
-                    <option value="Tech">Tech</option>
-                    <option value="Design">Design</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Writing">Writing</option>
-                    <option value="Other">Other</option>
+                    <option value="">Select category</option>
+                    {serviceCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
                   </select>
                   {errors.category && <p className={errorClass}>{errors.category}</p>}
                 </div>
 
                 <div>
-                  <label className={labelClass}>Job Type</label>
+                  <label className={labelClass}>Engagement Type</label>
                   <select
                     name="jobType"
                     value={form.jobType}
@@ -229,7 +272,7 @@ const PostJob = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className={labelClass}>Duration *</label>
+                  <label className={labelClass}>Expected Duration *</label>
                   <input
                     name="duration"
                     value={form.duration}
@@ -239,6 +282,64 @@ const PostJob = () => {
                   />
                   {errors.duration && <p className={errorClass}>{errors.duration}</p>}
                 </div>
+              </div>
+            </section>
+
+            {/* Divider */}
+            <div className="border-t border-slate-800" />
+
+            {/* Section: Work Images */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-xs font-bold text-amber-500 uppercase tracking-widest">
+                  Work Images
+                </h3>
+                <label
+                  className="inline-flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 cursor-pointer"
+                >
+                  {uploadingWorkImages ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
+                  {uploadingWorkImages ? "Uploading..." : "Upload images"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleWorkImageUpload}
+                    disabled={uploadingWorkImages || loading}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              <p className="text-slate-500 text-sm">
+                Upload images showing the work area, item, or service problem the employee needs to handle.
+              </p>
+              <p className="text-slate-600 text-xs">
+                Up to {MAX_IMAGE_UPLOADS} images. Each image must be 5MB or less.
+              </p>
+
+              {errors.workImages && <p className={errorClass}>{errors.workImages}</p>}
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {form.workImages.map((image, index) => (
+                  <div
+                    key={`${image}-${index}`}
+                    className="relative overflow-hidden rounded-xl border border-slate-700 bg-slate-800"
+                  >
+                    <img
+                      src={image}
+                      alt={`Work needed ${index + 1}`}
+                      className="h-28 w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeWorkImage(index)}
+                      className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-slate-950/80 text-slate-200 hover:text-red-300 flex items-center justify-center"
+                      aria-label="Remove work image"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -298,7 +399,7 @@ const PostJob = () => {
                 disabled={loading}
                 className="flex-2 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl transition shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 text-sm"
               >
-                {loading ? "Publishing..." : "Post Hustle "}
+                {loading ? "Publishing..." : "Post Request"}
               </button>
             </div>
           </div>

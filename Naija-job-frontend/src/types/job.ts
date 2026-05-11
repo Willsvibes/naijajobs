@@ -11,7 +11,8 @@ export interface Job{
    image?: ""| undefined,
    employmentType: string,
    duration: string,
+   workImages?: string[],
    experienceLevel?:string,
    postedDate?:string,
-   createdBy: string;
+   createdBy?: string;
 }

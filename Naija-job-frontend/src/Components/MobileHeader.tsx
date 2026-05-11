@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Menu, X, Home, PlusCircle, User2Icon, Bell } from 'lucide-react';
+import { Menu, X, Home, PlusCircle, User2Icon, Bell, Inbox } from 'lucide-react';
 import { NavLink } from 'react-router';
-import Logo from './Logo';
+import { Logo } from '../Ui/logo';
 import { useAuthStore } from '../store/useAuthStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import api from '../api/axiosInstance';
@@ -33,7 +33,8 @@ const MobileHeader: React.FC = () => {
 
   const navItems = [
     { name: "Dashboard", link: "/dashboard", icon: Home, roles: ["employee", "employer", "admin"] },
-    { name: "Post Job", link: "/post", icon: PlusCircle, roles: ["employer"] },
+    { name: "Post Request", link: "/post", icon: PlusCircle, roles: ["employer"] },
+    { name: "Offers", link: "/offers", icon: Inbox, roles: ["employer"] },
     { name: "Notifications", link: "/notifications", icon: Bell, roles: ["employee", "employer", "admin"] },
     { name: "Profile", link: "/profile", icon: User2Icon, roles: ["employee", "employer", "admin"] }
   ].filter(item => item.roles.includes(user.role));
@@ -113,7 +114,9 @@ const MobileHeader: React.FC = () => {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-white">{user.name}</span>
-                    <span className="text-xs text-slate-400 capitalize">{user.role}</span>
+                    <span className="text-xs text-slate-400 capitalize">
+                      {user.role === "employer" ? "client" : user.role === "employee" ? "provider" : user.role}
+                    </span>
                   </div>
                 </div>
               </div>

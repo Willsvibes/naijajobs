@@ -5,15 +5,17 @@ import { useNavigate } from "react-router";
 import {
   Plus, Briefcase, Users, BarChart3, Search,
   TrendingUp, Clock, X, Loader2, ChevronRight,
-  CheckCircle, XCircle, Eye, UserCircle2,
+  CheckCircle, XCircle, Eye, UserCircle2, Inbox,
 } from "lucide-react";
 import api from "../api/axiosInstance";
 import { toast } from "sonner";
+import type { ApplicationStatus } from "../types/application";
 
 interface Application {
   _id: string;
-  status: "pending" | "reviewed" | "accepted" | "rejected";
-  coverLetter: string;
+  status: ApplicationStatus;
+  proposal?: string;
+  portfolioImages?: string[];
   createdAt: string;
   applicant: {
     _id: string;
@@ -50,7 +52,10 @@ const statusConfig: Record<Application["status"], { label: string; color: string
   pending:  { label: "Pending",  color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/20"     },
   reviewed: { label: "Reviewed", color: "text-blue-400",    bg: "bg-blue-500/10 border-blue-500/20"       },
   accepted: { label: "Accepted", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-  rejected: { label: "Rejected", color: "text-red-400",     bg: "bg-red-500/10 border-red-500/20"         },
+  rejected: { label: "Declined", color: "text-red-400",     bg: "bg-red-500/10 border-red-500/20"         },
+  in_progress: { label: "In Progress", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
+  completed: { label: "Completed", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
+  cancelled: { label: "Cancelled", color: "text-slate-400", bg: "bg-slate-500/10 border-slate-500/20" },
 };
 
 const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
@@ -69,7 +74,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
   );
 
   const totalMonthlyPay = jobs.reduce((sum, job) => sum + Number(job.pay), 0);
-  const fullTimeCount = jobs.filter((j) => j.employmentType === "Full-time").length;
+  const activeRequests = jobs.length;
 
   const fetchApplications = async (jobId: string | number) => {
     try {
@@ -95,7 +100,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
       setApplications((prev) =>
         prev.map((a) => (a._id === applicationId ? { ...a, status } : a))
       );
-      toast.success(`Application ${status}`);
+      toast.success(`Offer ${statusConfig[status].label.toLowerCase()}`);
     } catch {
       toast.error("Failed to update status");
     } finally {
@@ -113,26 +118,35 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 sm:mb-12">
           <div>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-white mb-1 sm:mb-2">
-              Employer Dashboard
+              Client Dashboard
             </h1>
             <p className="text-slate-400 text-sm sm:text-base max-w-2xl">
-              Monitor listings, track candidates, and manage your pipeline.
+              Manage service requests, review offers, and track delivery.
             </p>
           </div>
-          <button
-            onClick={() => navigate("/post")}
-            className="flex items-center justify-center gap-2 bg-linear-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 px-5 py-3 sm:px-8 sm:py-4 rounded-2xl text-sm sm:text-base font-bold text-black transition-all duration-300 shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95 w-full sm:w-auto"
-          >
-            <Plus size={18} strokeWidth={2.5} />
-            Post New Job
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => navigate("/offers")}
+              className="flex items-center justify-center gap-2 border border-slate-700 text-slate-200 hover:border-amber-500/40 hover:text-amber-400 px-5 py-3 sm:px-6 sm:py-4 rounded-2xl text-sm sm:text-base font-bold transition-all w-full sm:w-auto"
+            >
+              <Inbox size={18} strokeWidth={2.5} />
+              View Offers
+            </button>
+            <button
+              onClick={() => navigate("/post")}
+              className="flex items-center justify-center gap-2 bg-linear-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 px-5 py-3 sm:px-8 sm:py-4 rounded-2xl text-sm sm:text-base font-bold text-black transition-all duration-300 shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95 w-full sm:w-auto"
+            >
+              <Plus size={18} strokeWidth={2.5} />
+              Post Request
+            </button>
+          </div>
         </div>
 
         {/* ── Stats Grid ─────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
-          <StatCard label="Total Postings" value={jobs.length} icon={Briefcase} trend="+2 this week" />
-          <StatCard label="Active Listings" value={jobs.length} icon={BarChart3} color="amber" />
-          <StatCard label="Full-time Roles" value={fullTimeCount} icon={Clock} />
+          <StatCard label="Service Requests" value={jobs.length} icon={Briefcase} trend="+2 this week" />
+          <StatCard label="Active Requests" value={activeRequests} icon={BarChart3} color="amber" />
+          <StatCard label="Open Offers" value="Review" icon={Clock} />
           <StatCard
             label="Total Budget"
             value={`₦${(totalMonthlyPay / 1000).toFixed(0)}k`}
@@ -144,7 +158,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
         {/* ── Search + Title ──────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-3">
-            Your Listings
+            Your Requests
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
               {filteredJobs.length} active
             </span>
@@ -175,7 +189,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
                   className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-amber-400 hover:border-amber-500/30 transition-all text-sm font-medium"
                 >
                   <Eye size={14} />
-                  View Applications
+                  View Offers
                   <ChevronRight size={14} />
                 </button>
               </div>
@@ -189,7 +203,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
               <p className="text-slate-500 max-w-sm text-sm">
                 {searchQuery
                   ? `No results for "${searchQuery}"`
-                  : "You haven't posted any jobs yet."}
+                  : "You haven't posted any service requests yet."}
               </p>
               {!searchQuery && (
                 <button
@@ -197,7 +211,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
                   className="mt-6 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 text-sm group"
                 >
                   <Plus size={16} className="group-hover:rotate-90 transition-transform" />
-                  Post your first job
+                  Post your first request
                 </button>
               )}
             </div>
@@ -238,7 +252,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
               ) : applications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <UserCircle2 size={48} className="text-slate-700 mb-4" />
-                  <p className="text-slate-500 text-sm">No applications yet for this job</p>
+                  <p className="text-slate-500 text-sm">No offers yet for this request</p>
                 </div>
               ) : (
                 applications.map((app) => {
@@ -278,11 +292,23 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
                         </div>
                       )}
 
-                      {/* Cover letter */}
-                      {app.coverLetter && (
+                      {app.proposal && (
                         <p className="text-slate-400 text-xs leading-relaxed line-clamp-3 bg-slate-900/50 rounded-lg p-3 border border-slate-700/30">
-                          {app.coverLetter}
+                          {app.proposal}
                         </p>
+                      )}
+
+                      {app.portfolioImages && app.portfolioImages.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2">
+                          {app.portfolioImages.slice(0, 3).map((image, index) => (
+                            <img
+                              key={`${image}-${index}`}
+                              src={image}
+                              alt={`Previous work ${index + 1}`}
+                              className="h-20 w-full rounded-lg object-cover border border-slate-700 bg-slate-800"
+                            />
+                          ))}
+                        </div>
                       )}
 
                       {/* Actions */}
@@ -312,7 +338,7 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
                             className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all text-xs font-medium disabled:opacity-50"
                           >
                             <XCircle size={12} />
-                            Reject
+                            Decline
                           </button>
                         </div>
                       ) : (

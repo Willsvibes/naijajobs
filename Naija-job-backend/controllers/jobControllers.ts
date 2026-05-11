@@ -9,11 +9,21 @@ export const postJob = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Only employers can create jobs" });
     }
 
-    const { title, company, jobType, category, location, duration, skills, salary, description } = req.body;
+    const { title, company, jobType, category, location, duration, skills, salary, description, workImages } = req.body;
 
-    if (!title || !company || !category || !location || !salary) {
+    if (!title || !company || !category || !location || !salary || !duration) {
       return res.status(400).json({
-        message: "Title, company, category, location, and salary are required",
+        message: "Title, company, category, location, duration, and salary are required",
+      });
+    }
+
+    const cleanWorkImages = Array.isArray(workImages)
+      ? workImages.map((image: string) => image.trim()).filter(Boolean)
+      : [];
+
+    if (cleanWorkImages.length === 0) {
+      return res.status(400).json({
+        message: "At least one image of the work is required",
       });
     }
 
@@ -27,6 +37,7 @@ export const postJob = async (req: Request, res: Response) => {
       skills,
       salary,
       description,
+      workImages: cleanWorkImages,
       createdBy: req.user._id,
     });
 

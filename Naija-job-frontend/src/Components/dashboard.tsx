@@ -18,6 +18,7 @@ interface ApiJob {
   category: string;
   description?: string;
   createdBy: string;
+  workImages?: string[];
 }
 
 const Dashboard = () => {
@@ -49,6 +50,7 @@ const Dashboard = () => {
         type: job.category,
         description: job.description ?? "",
         createdBy: job.createdBy,
+        workImages: job.workImages ?? [],
       }));
 
       setJobs(formattedJobs);

@@ -1,386 +1,201 @@
-// import { useState } from 'react';
-// import type { ChangeEvent } from 'react';
-// import { toast } from 'sonner';
-// import type { FormData } from '../types/formData';
-// import { useNavigate } from 'react-router';
-// import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-// import useFileHandler from '../Hooks/useFileHandler'; 
-// import useFormValidation from '../Hooks/useFormValidation'; 
-// import { Step1, Step2, Step3, Step4 } from '../Ui/formSteps';
+import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import { useNavigate, useParams } from "react-router";
+import { ArrowLeft, Check, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import api from "../api/axiosInstance";
+import { MAX_IMAGE_UPLOADS, uploadImageToCloudinary } from "../api/cloudinaryUpload";
 
-// interface FormErrors {
-//   [key: string]: string;
-// }
-
-// const ApplicationForm = () => {
-//   const [currentStep, setCurrentStep] = useState<number>(1);
-//   const navigate = useNavigate();
-//   const [formData, setFormData] = useState<FormData>({
-//     fullName: '',
-//     email: '',
-//     phone: '',
-//     location: '',
-//     currentPosition: '',
-//     yearsExperience: '',
-//     expectedSalary: '',
-//     highestEducation: '',
-//     fieldOfStudy: '',
-//     coverLetter: '',
-//     resumeFile: null,
-//     availableStartDate: '',
-//     noticePeriod: '',
-//   });
-
-//   const [errors, setErrors] = useState<FormErrors>({});
-//   const totalSteps: number = 4;
-
-//   // Initialize hooks with state
-//   const { handleFileChange, removeFile } = useFileHandler({ setErrors, setFormData });
-//   const { validateStep } = useFormValidation({ formData, setErrors });
-
-//   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-//     const { name, value } = e.target;
-//     setFormData(prev => ({ ...prev, [name]: value }));
-//     if (errors[name]) {
-//       setErrors(prev => ({ ...prev, [name]: '' }));
-//     }
-//   };
-
-//   const nextStep = (): void => {
-//     if (validateStep(currentStep)) {
-//       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-//     }
-//   };
-
-//   const prevStep = (): void => {
-//     setCurrentStep(prev => Math.max(prev - 1, 1));
-//   };
-
-//   const handleSubmit = (): void => {
-//     if (validateStep(currentStep)) {
-//       console.log('Form submitted:', formData);
-//       toast.success("Account created successfully!");
-//       setTimeout(() => navigate("/"), 5000);
-//       // TODO: Send data to your backend API
-//     }
-//   };
-
-//   const renderStepIndicator = () => (
-//     <div className="flex items-center justify-center mb-8">
-//       {[1, 2, 3, 4].map((step, index) => (
-//         <div key={step} className="flex items-center">
-//           <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold transition-all duration-300 ${
-//             step === currentStep 
-//               ? 'bg-linear-to-r from-amber-500 to-yellow-600 text-black' 
-//               : step < currentStep 
-//                 ? 'bg-emerald-500 text-white' 
-//                 : 'bg-slate-800 text-slate-500'
-//           }`}>
-//             {step < currentStep ? <Check size={20} /> : step}
-//           </div>
-//           {index < 3 && (
-//             <div className={`w-12 sm:w-20 h-1 mx-2 transition-all duration-300 ${
-//               step < currentStep ? 'bg-emerald-500' : 'bg-slate-800'
-//             }`}></div>
-//           )}
-//         </div>
-//       ))}
-//     </div>
-//   );
-
-//   return (
-//     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
-//       <div className="max-w-2xl mx-auto">
-//         <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl">
-//           {renderStepIndicator()}
-
-//           <div>
-//             {currentStep === 1 && (
-//               <Step1 
-//                 formData={formData} 
-//                 errors={errors} 
-//                 handleInputChange={handleInputChange} 
-//               />
-//             )}
-//             {currentStep === 2 && (
-//               <Step2 
-//                 formData={formData} 
-//                 errors={errors} 
-//                 handleInputChange={handleInputChange} 
-//               />
-//             )}
-//             {currentStep === 3 && (
-//               <Step3 
-//                 formData={formData} 
-//                 errors={errors} 
-//                 handleInputChange={handleInputChange} 
-//               />
-//             )}
-//             {currentStep === 4 && (
-//               <Step4 
-//                 formData={formData} 
-//                 errors={errors} 
-//                 handleInputChange={handleInputChange}
-//                 handleFileChange={handleFileChange}
-//                 removeFile={removeFile}
-//               />
-//             )}
-
-//             <div className="flex gap-4 mt-8">
-//               {currentStep > 1 && (
-//                 <button
-//                   onClick={prevStep}
-//                   className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
-//                 >
-//                   <ArrowLeft size={20} />
-//                   Previous
-//                 </button>
-//               )}
-
-//               {currentStep < totalSteps ? (
-//                 <button
-//                   onClick={nextStep}
-//                   className="flex-1 bg-linear-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
-//                 >
-//                   Next
-//                   <ArrowRight size={20} />
-//                 </button>
-//               ) : (
-//                 <button
-//                   onClick={handleSubmit}
-//                   className="flex-1 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
-//                 >
-//                   Submit Application
-//                   <Check size={20} />
-//                 </button>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-
-//         <p className="text-center text-slate-600 text-sm mt-6">
-//           Step {currentStep} of {totalSteps}
-//         </p>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ApplicationForm;
-
-import { useState } from 'react';
-import type { ChangeEvent } from 'react';
-import { toast } from 'sonner';
-import type { FormData } from '../types/formData';
-import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import useFileHandler from '../Hooks/useFileHandler';
-import useFormValidation from '../Hooks/useFormValidation';
-import { Step1, Step2, Step3, Step4 } from '../Ui/formSteps';
-import api from '../api/axiosInstance';
-
-interface FormErrors {
-  [key: string]: string;
-}
+const inputClass =
+  "w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition placeholder-slate-600 text-sm";
 
 const ApplicationForm = () => {
   const { jobId } = useParams<{ jobId: string }>();
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [proposal, setProposal] = useState("");
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
-  const [formData, setFormData] = useState<FormData>({
-    fullName: '',
-    email: '',
-    phone: '',
-    location: '',
-    currentPosition: '',
-    yearsExperience: '',
-    expectedSalary: '',
-    highestEducation: '',
-    fieldOfStudy: '',
-    coverLetter: '',
-    resumeFile: null,
-    availableStartDate: '',
-    noticePeriod: '',
-  });
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (files.length === 0) return;
 
-  const [errors, setErrors] = useState<FormErrors>({});
-  const totalSteps = 4;
+    if (portfolioImages.length + files.length > MAX_IMAGE_UPLOADS) {
+      toast.error(`You can upload up to ${MAX_IMAGE_UPLOADS} images.`);
+      event.target.value = "";
+      return;
+    }
 
-  const { handleFileChange, removeFile } = useFileHandler({ setErrors, setFormData });
-  const { validateStep } = useFormValidation({ formData, setErrors });
-
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    try {
+      setUploadingImages(true);
+      const uploadedUrls = await Promise.all(files.map(uploadImageToCloudinary));
+      setPortfolioImages((prev) => [...prev, ...uploadedUrls].filter(Boolean));
+      setErrors((prev) => ({ ...prev, portfolioImages: "" }));
+      toast.success("Images uploaded successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload images");
+    } finally {
+      setUploadingImages(false);
+      event.target.value = "";
     }
   };
 
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const removeImageField = (index: number) => {
+    setPortfolioImages((prev) => prev.filter((_, imageIndex) => imageIndex !== index));
+  };
+
+  const validate = () => {
+    const nextErrors: Record<string, string> = {};
+    const cleanImages = portfolioImages.map((image) => image.trim()).filter(Boolean);
+
+    if (!proposal.trim()) {
+      nextErrors.proposal = "Tell the employer how you will handle this service.";
     }
+
+    if (cleanImages.length === 0) {
+      nextErrors.portfolioImages = "Upload at least one image from your previous work.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-  };
-
-  const handleSubmit = async (): Promise<void> => {
-    if (!validateStep(currentStep)) return;
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!validate()) return;
 
     if (!jobId) {
-      toast.error('Invalid job. Please try again.');
+      toast.error("Invalid job. Please try again.");
       return;
     }
 
     try {
       setLoading(true);
-
-      // Send only what the backend needs
       await api.post(`/applications/${jobId}`, {
-        coverLetter: formData.coverLetter,
+        proposal,
+        portfolioImages: portfolioImages.map((image) => image.trim()).filter(Boolean),
       });
 
-      toast.success('Application submitted successfully! 🚀');
-      setTimeout(() => navigate('/jobs'), 2000);
+      toast.success("Offer sent successfully!");
+      navigate("/dashboard");
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to submit application';
-
-      // Handle duplicate application cleanly
-      if (err.response?.status === 409) {
-        toast.error('You have already applied to this job.');
-      } else {
-        toast.error(message);
-      }
+      const message = err.response?.data?.message || "Failed to send offer";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
-      {[1, 2, 3, 4].map((step, index) => (
-        <div key={step} className="flex items-center">
-          <div
-            className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold transition-all duration-300 ${
-              step === currentStep
-                ? 'bg-linear-to-r from-amber-500 to-yellow-600 text-black'
-                : step < currentStep
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-500'
-            }`}
-          >
-            {step < currentStep ? <Check size={20} /> : step}
-          </div>
-          {index < 3 && (
-            <div
-              className={`w-12 sm:w-20 h-1 mx-2 transition-all duration-300 ${
-                step < currentStep ? 'bg-emerald-500' : 'bg-slate-800'
-              }`}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
+    <div className="min-h-screen bg-slate-950 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl">
-          {renderStepIndicator()}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-8 transition-colors"
+        >
+          <ArrowLeft size={18} />
+          Back
+        </button>
 
-          <div>
-            {currentStep === 1 && (
-              <Step1
-                formData={formData}
-                errors={errors}
-                handleInputChange={handleInputChange}
-              />
-            )}
-            {currentStep === 2 && (
-              <Step2
-                formData={formData}
-                errors={errors}
-                handleInputChange={handleInputChange}
-              />
-            )}
-            {currentStep === 3 && (
-              <Step3
-                formData={formData}
-                errors={errors}
-                handleInputChange={handleInputChange}
-              />
-            )}
-            {currentStep === 4 && (
-              <Step4
-                formData={formData}
-                errors={errors}
-                handleInputChange={handleInputChange}
-                handleFileChange={handleFileChange}
-                removeFile={removeFile}
-              />
-            )}
-
-            <div className="flex gap-4 mt-8">
-              {currentStep > 1 && (
-                <button
-                  onClick={prevStep}
-                  disabled={loading}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <ArrowLeft size={20} />
-                  Previous
-                </button>
-              )}
-
-              {currentStep < totalSteps ? (
-                <button
-                  onClick={nextStep}
-                  className="flex-1 bg-linear-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  Next
-                  <ArrowRight size={20} />
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="flex-1 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98]"
-                >
-                  {loading ? (
-                    <>
-                      <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                      </svg>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      Submit Application
-                      <Check size={20} />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-slate-900/80 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden"
+        >
+          <div className="bg-amber-500 p-8">
+            <h1 className="text-3xl font-black text-black">Send Service Offer</h1>
+            <p className="text-black/70 text-sm font-medium mt-1">
+              Share how you will solve the job and show proof from previous work.
+            </p>
           </div>
-        </div>
 
-        <p className="text-center text-slate-600 text-sm mt-6">
-          Step {currentStep} of {totalSteps}
-        </p>
+          <div className="p-8 space-y-8">
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Service Proposal *
+              </label>
+              <textarea
+                value={proposal}
+                onChange={(event) => {
+                  setProposal(event.target.value);
+                  setErrors((prev) => ({ ...prev, proposal: "" }));
+                }}
+                rows={7}
+                className={`${inputClass} resize-none`}
+                placeholder="Explain your approach, timeline, tools, and anything the employer should know."
+              />
+              {errors.proposal && <p className="text-red-400 text-sm mt-2">{errors.proposal}</p>}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <label className="block text-sm font-semibold text-slate-300">
+                  Previous Work Images *
+                </label>
+                <label
+                  className="inline-flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 cursor-pointer"
+                >
+                  {uploadingImages ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
+                  {uploadingImages ? "Uploading..." : "Upload images"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    disabled={uploadingImages || loading}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {errors.portfolioImages && (
+                <p className="text-red-400 text-sm mt-2">{errors.portfolioImages}</p>
+              )}
+
+              <p className="text-slate-500 text-xs mt-2">
+                Up to {MAX_IMAGE_UPLOADS} images. Each image must be 5MB or less.
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+                {portfolioImages
+                  .map((image, index) => (
+                    <div
+                      key={`${image}-${index}`}
+                      className="relative overflow-hidden rounded-xl border border-slate-700 bg-slate-800"
+                    >
+                      <img
+                        src={image}
+                        alt={`Previous work ${index + 1}`}
+                        className="h-28 w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImageField(index)}
+                        className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-slate-950/80 text-slate-200 hover:text-red-300 flex items-center justify-center"
+                        aria-label="Remove image"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-xl transition active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {loading ? "Sending..." : "Send Offer"}
+              {!loading && <Check size={20} />}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
 export default ApplicationForm;
-

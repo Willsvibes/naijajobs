@@ -1,0 +1,1 @@
+import{t as s}from"./index-Dz1Fo-IT.js";function c(){return{toastSuccess:t=>{s.dismiss(),s.success(t)},toastError:t=>{s.dismiss(),s.error(t)},toastLoading:t=>{s.dismiss(),s.loading(t)}}}export{c as u};

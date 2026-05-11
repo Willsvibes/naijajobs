@@ -64,13 +64,13 @@ const EmployeeDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
         <div className="pt-12 pb-8 text-center">
           <div className="inline-flex items-center gap-2 bg-linear-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-full px-4 py-2 mb-6">
             <Sparkles size={16} className="text-amber-400" />
-            <span className="text-sm text-amber-400 font-medium">Discover Your Next Opportunity</span>
+            <span className="text-sm text-amber-400 font-medium">Find nearby service requests</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-linear-to-r h-[100px] from-amber-400 via-yellow-300 to-amber-400 text-transparent bg-clip-text animate-gradient">
-            Find Premium Gigs
+            Find Service Work
           </h1>
           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            Explore curated opportunities tailored to your skills and location
+            Browse requests from clients who need practical work done.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ const EmployeeDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
                 <Search size={18} className="text-slate-500" />
                 <input
                   className="bg-transparent outline-none text-white placeholder-slate-500 w-full text-sm"
-                  placeholder="Search by job title or location..."
+                  placeholder="Search by service or location..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />

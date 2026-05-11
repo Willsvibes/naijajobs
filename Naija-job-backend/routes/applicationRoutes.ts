@@ -7,6 +7,7 @@ import {
   applyToJob,
   getApplicationsForJob,
   getMyApplications,
+  getReceivedOffers,
   updateApplicationStatus,
 } from "../controllers/applicationControllers";
 import {
@@ -19,6 +20,7 @@ export const applicationRouter = Router();
 configDotenv()
 // Applications
 applicationRouter.post("/:jobId", authMiddleware, applyToJob);
+applicationRouter.get("/received", authMiddleware, getReceivedOffers);
 applicationRouter.get("/job/:jobId", authMiddleware, getApplicationsForJob);
 applicationRouter.get("/me", authMiddleware, getMyApplications);
 applicationRouter.patch("/:applicationId/status", authMiddleware, updateApplicationStatus);

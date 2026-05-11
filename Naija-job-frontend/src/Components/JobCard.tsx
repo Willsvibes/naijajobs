@@ -201,7 +201,7 @@ const JobCard = ({ job, onEmploymentTypeClick, currentFilterType, onDelete }: Pr
         {/* Footer */}
         <div className="flex items-center justify-between pt-2">
           <div>
-            <p className="text-xs text-slate-500 mb-0.5">Salary</p>
+            <p className="text-xs text-slate-500 mb-0.5">Budget</p>
             <p className="text-2xl font-bold bg-linear-to-r from-emerald-400 to-green-500 text-transparent bg-clip-text">
               ₦{Number(job.pay).toLocaleString()}
             </p>
@@ -219,7 +219,7 @@ const JobCard = ({ job, onEmploymentTypeClick, currentFilterType, onDelete }: Pr
               transition-all duration-300
             "
           >
-            <span>View Details</span>
+            <span>View Request</span>
             <ArrowRight
               size={16}
               className={`transition-transform duration-300 ${isHovered ? "translate-x-1" : ""}`}

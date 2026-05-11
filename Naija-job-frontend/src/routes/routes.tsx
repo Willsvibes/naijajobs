@@ -1,17 +1,31 @@
-import PostJob from "../pages/postJobPage";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
-import MainLayout from "../Components/MainLayout";
-import JobDetails from "../pages/JobDetails";
-import ApplicationForm from "../pages/ApplyForm";
-import AuthLayout from "../Components/AuthLayout";
-import LandingPage from "../LandingPage/landingPage";
-import Login from "../pages/Login";
-import Profile from "../pages/profile";
-import Dashboard from "../Components/dashboard";
-import Signup from "../pages/signUp";
 import PrivateRoute from "./privateRoute";
-import Notifications from "../Components/notification";
-import Settings from "../pages/settings";
+import { PageLoader } from "../Ui/pageLoader";
+
+// ── Eagerly loaded (small, always needed) ────
+import MainLayout from "../Components/MainLayout";
+import AuthLayout from "../Components/AuthLayout";
+
+// ── Lazy loaded ──────────────────────────────
+const LandingPage      = lazy(() => import("../LandingPage/landingPage"));
+const Login            = lazy(() => import("../pages/Login"));
+const Signup           = lazy(() => import("../pages/signUp"));
+const Dashboard        = lazy(() => import("../Components/dashboard"));
+const Profile          = lazy(() => import("../pages/profile"));
+const Notifications    = lazy(() => import("../Components/notification"));
+const Settings         = lazy(() => import("../pages/settings"));
+const PostJob          = lazy(() => import("../pages/postJobPage"));
+const JobDetails       = lazy(() => import("../pages/JobDetails"));
+const ApplicationForm  = lazy(() => import("../pages/ApplyForm"));
+const Offers           = lazy(() => import("../pages/Offers"));
+
+const withSuspense = (Component: React.ComponentType) => (
+  <Suspense fallback={<PageLoader />}>
+    <Component />
+  </Suspense>
+);
+
 const AppRoutes = () => (
   <PrivateRoute>
     <MainLayout />
@@ -19,43 +33,62 @@ const AppRoutes = () => (
 );
 
 const router = createBrowserRouter([
-  // Public Landing Page
+  // ── Public ──────────────────────────────────
   {
     path: "/",
-    element: <LandingPage />,
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <LandingPage />
+      </Suspense>
+    ),
   },
-  // Auth Group
+
+  // ── Auth ────────────────────────────────────
   {
     path: "/auth",
     Component: AuthLayout,
     children: [
       { index: true, element: <Navigate to="/auth/login" replace /> },
-      { path: "login", Component: Login },
-      { path: "signup", Component: Signup },
+      { path: "login",  element: withSuspense(Login)  },
+      { path: "signup", element: withSuspense(Signup) },
     ],
   },
-  // Protected Application Group
+
+  // ── Protected ───────────────────────────────
   {
     path: "/",
     element: <AppRoutes />,
     children: [
-      { path: "dashboard", Component: Dashboard },
-      { path: "profile", Component: Profile },
-      { path: "notifications", Component: Notifications }, 
-      { path: "settings", Component: Settings },
+      { path: "dashboard",        element: withSuspense(Dashboard)        },
+      { path: "profile",          element: withSuspense(Profile)          },
+      { path: "notifications",    element: withSuspense(Notifications)    },
+      { path: "settings",         element: withSuspense(Settings)         },
+      {
+        path: "offers",
+        element: (
+          <PrivateRoute allowedRoles={["employer"]}>
+            <Suspense fallback={<PageLoader />}>
+              <Offers />
+            </Suspense>
+          </PrivateRoute>
+        ),
+      },
+      { path: "job/:id",          element: withSuspense(JobDetails)       },
+      { path: "job/apply/:jobId", element: withSuspense(ApplicationForm)  },
       {
         path: "post",
         element: (
           <PrivateRoute allowedRoles={["employer"]}>
-            <PostJob />
+            <Suspense fallback={<PageLoader />}>
+              <PostJob />
+            </Suspense>
           </PrivateRoute>
         ),
       },
-      { path: "job/:id", Component: JobDetails },
-      { path: "job/apply/:jobId", Component: ApplicationForm }, 
     ],
   },
-  // Catch-all
+
+  // ── Catch-all ───────────────────────────────
   {
     path: "*",
     element: <Navigate to="/" replace />,

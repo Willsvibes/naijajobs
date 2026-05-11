@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
-import { Home, PlusCircle, User2Icon, Bell, ChevronRight, Settings } from 'lucide-react';
+import { Home, PlusCircle, User2Icon, Bell, ChevronRight, Settings, Inbox } from 'lucide-react';
 import { Logo } from '../Ui/logo';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../api/axiosInstance';
@@ -14,9 +14,15 @@ const allNavItems = [
     roles: ["employee", "employer", "admin"],
   },
   {
-    name: "Post Job",
+    name: "Post Request",
     link: "/post",
     icon: PlusCircle,
+    roles: ["employer"],
+  },
+  {
+    name: "Offers",
+    link: "/offers",
+    icon: Inbox,
     roles: ["employer"],
   },
   {
@@ -127,7 +133,9 @@ const Navbar: React.FC = () => {
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-semibold text-white truncate">{user.name}</span>
-                <span className="text-xs text-slate-500 capitalize">{user.role}</span>
+                <span className="text-xs text-slate-500 capitalize">
+                  {user.role === "employer" ? "client" : user.role === "employee" ? "provider" : user.role}
+                </span>
               </div>
             </div>
           </div>

@@ -1,0 +1,15 @@
+export const serviceCategories = [
+  "Cleaning",
+  "Plumbing",
+  "Electrical",
+  "Painting",
+  "Carpentry",
+  "Generator Repair",
+  "Phone & Laptop Repair",
+  "Tailoring",
+  "Hair & Beauty",
+  "Event Services",
+  "Delivery & Logistics",
+  "Home Installation",
+  "Other",
+];

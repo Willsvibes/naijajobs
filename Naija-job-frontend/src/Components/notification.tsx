@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import api from "../api/axiosInstance";
 import {
   Bell,
@@ -10,6 +11,7 @@ import {
   MailOpen,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import type { ApplicationStatus } from "../types/application";
 
 interface Notification {
   _id: string;
@@ -22,12 +24,18 @@ interface Notification {
   read: boolean;
   createdAt: string;
   sender: { name: string; email: string };
-  job?: { title: string; company: string };
+  job?: { title: string; company: string; workImages?: string[] };
+  application?: {
+    _id: string;
+    proposal?: string;
+    portfolioImages?: string[];
+    status: ApplicationStatus;
+  };
 }
 
 const typeConfig: Record<
   Notification["type"],
-  { icon: React.ReactNode; color: string; bg: string }
+  { icon: ReactNode; color: string; bg: string }
 > = {
   new_application: {
     icon: <BriefcaseBusiness size={18} />,
@@ -52,11 +60,11 @@ const typeConfig: Record<
 };
 
 const Notifications = () => {
-
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [markingAll, setMarkingAll] = useState(false);
+  const [updatingApplicationId, setUpdatingApplicationId] = useState<string | null>(null);
 
   const fetchNotifications = async () => {
     try {
@@ -100,11 +108,36 @@ const Notifications = () => {
     }
   };
 
+  const updateApplicationStatus = async (
+    applicationId: string,
+    status: "accepted" | "rejected"
+  ) => {
+    try {
+      setUpdatingApplicationId(applicationId);
+      const res = await api.patch(`/applications/${applicationId}/status`, { status });
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.application?._id === applicationId
+            ? {
+                ...notification,
+                application: {
+                  ...notification.application,
+                  status: res.data.application.status,
+                },
+              }
+            : notification
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update application status", err);
+    } finally {
+      setUpdatingApplicationId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -141,7 +174,6 @@ const Notifications = () => {
           )}
         </div>
 
-        {/* Content */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
             <Loader2 size={32} className="text-amber-500 animate-spin" />
@@ -162,25 +194,22 @@ const Notifications = () => {
                 <div
                   key={n._id}
                   onClick={() => !n.read && markOneRead(n._id)}
-                  className={`relative flex gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer
-                    ${n.read
+                  className={`relative flex gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                    n.read
                       ? "bg-slate-900/40 border-slate-800/50 opacity-70"
                       : "bg-slate-900 border-slate-700/50 hover:border-slate-600"
-                    }`}
+                  }`}
                 >
-                  {/* Unread dot */}
                   {!n.read && (
                     <span className="absolute top-4 right-4 w-2 h-2 rounded-full bg-amber-500" />
                   )}
 
-                  {/* Icon */}
                   <div
                     className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center ${config.bg} ${config.color}`}
                   >
                     {config.icon}
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm leading-snug ${
@@ -192,8 +221,60 @@ const Notifications = () => {
 
                     {n.job && (
                       <p className="text-xs text-slate-500 mt-1">
-                        {n.job.title} · {n.job.company}
+                        {n.job.title} - {n.job.company}
                       </p>
+                    )}
+
+                    {n.type === "new_application" && n.application && (
+                      <div className="mt-4 space-y-4">
+                        {n.application.proposal && (
+                          <p className="text-sm text-slate-300 bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                            {n.application.proposal}
+                          </p>
+                        )}
+
+                        {n.application.portfolioImages &&
+                          n.application.portfolioImages.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {n.application.portfolioImages.map((image, index) => (
+                                <img
+                                  key={`${image}-${index}`}
+                                  src={image}
+                                  alt={`Previous work ${index + 1}`}
+                                  className="h-24 w-full object-cover rounded-xl border border-slate-700 bg-slate-800"
+                                />
+                              ))}
+                            </div>
+                          )}
+
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="text-xs text-slate-500 capitalize">
+                            Status: {n.application.status}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={updatingApplicationId === n.application._id}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              updateApplicationStatus(n.application!._id, "accepted");
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-400 disabled:opacity-50"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            type="button"
+                            disabled={updatingApplicationId === n.application._id}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              updateApplicationStatus(n.application!._id, "rejected");
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-400 disabled:opacity-50"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
                     )}
 
                     <p className="text-xs text-slate-600 mt-1.5">

@@ -23,6 +23,7 @@ interface ApiJob {
   jobType: string;
   category: string;
   description?: string;
+  workImages?: string[];
 }
 
 const JobDetails = () => {
@@ -50,7 +51,8 @@ const JobDetails = () => {
         skills: data.skills,
         pay: data.salary,
         type: data.category,
-        employmentType: data.jobType
+        employmentType: data.jobType,
+        workImages: data.workImages ?? [],
       });
     } catch (err: any) {
       console.error("Error fetching job details", err);
@@ -143,7 +145,7 @@ const JobDetails = () => {
             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <BadgeDollarSign size={24} className="text-emerald-400" />
             </div>
-            <p className="text-sm text-slate-500 font-medium uppercase">Monthly Salary</p>
+            <p className="text-sm text-slate-500 font-medium uppercase">Budget</p>
             <p className="text-2xl font-bold text-white mt-1">₦{Number(job.pay).toLocaleString()}</p>
           </div>
 
@@ -173,6 +175,22 @@ const JobDetails = () => {
           <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap">
             {job.description}
           </div>
+
+          {job.workImages && job.workImages.length > 0 && (
+            <div className="mt-10 pt-10 border-t border-slate-800/50">
+              <h3 className="text-xl font-bold text-white mb-6">Work Images</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {job.workImages.map((image, index) => (
+                  <img
+                    key={`${image}-${index}`}
+                    src={image}
+                    alt={`Work needed ${index + 1}`}
+                    className="h-56 w-full object-cover rounded-2xl border border-slate-700 bg-slate-800"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-10 pt-10 border-t border-slate-800/50">
             <h3 className="text-xl font-bold text-white mb-6">Required Skills</h3>

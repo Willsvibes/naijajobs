@@ -40,6 +40,15 @@ const jobSchema = new mongoose.Schema({
         default: "",
     },
 
+    workImages: {
+        type: [String],
+        default: [],
+        validate: {
+            validator: (images: string[]) => images.every((image) => typeof image === "string" && image.trim().length > 0),
+            message: "Work images must be valid image URLs",
+        },
+    },
+
     salary: {
         type: Number,
         required: true
