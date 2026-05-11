@@ -5,6 +5,7 @@ import AdminDashboard from "../pages/AdminDasboard";
 import { useAuthStore } from "../store/useAuthStore";
 import type { Job } from "../types/job";
 import api from "../api/axiosInstance";
+import { PageLoader } from "../Ui/pageLoader";
 
 interface ApiJob {
   _id: string;
@@ -67,11 +68,7 @@ const Dashboard = () => {
   }, [fetchJobs]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-      </div>
-    );
+    return <PageLoader label="Loading requests" fullScreen={false} />;
   }
 
   if (error) {

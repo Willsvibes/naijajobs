@@ -8,6 +8,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { PageLoader } from "../Ui/pageLoader";
 
 // ── Types ────────────────────────────────────
 interface Stats {
@@ -216,14 +217,7 @@ const filteredJobs = jobs.filter((j) => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 size={32} className="text-amber-500 animate-spin" />
-          <p className="text-slate-500 text-sm">Loading admin data...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader label="Loading admin data" />;
   }
 
   return (

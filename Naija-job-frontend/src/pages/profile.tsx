@@ -7,6 +7,7 @@ import {
   Building2, Save, Loader2, X, Check,
   Pencil, MapPin,
 } from "lucide-react";
+import { PageLoader } from "../Ui/pageLoader";
 
 const Profile = () => {
   const user = useAuthStore((state) => state.user);
@@ -83,14 +84,7 @@ const Profile = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="relative">
-          <div className="w-16 h-16 rounded-full border-4 border-slate-800" />
-          <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-t-amber-500 animate-spin" />
-        </div>
-      </div>
-    );
+    return <PageLoader label="Loading profile" fullScreen={false} />;
   }
 
   const initials = profileData?.name

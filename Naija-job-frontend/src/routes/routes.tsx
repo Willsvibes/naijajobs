@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
 import PrivateRoute from "./privateRoute";
 import { PageLoader } from "../Ui/pageLoader";
+import ErrorPage from "../pages/ErrorPage";
 
 // ── Eagerly loaded (small, always needed) ────
 import MainLayout from "../Components/MainLayout";
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
   // ── Public ──────────────────────────────────
   {
     path: "/",
+    errorElement: <ErrorPage />,
     element: (
       <Suspense fallback={<PageLoader />}>
         <LandingPage />
@@ -46,6 +48,7 @@ const router = createBrowserRouter([
   // ── Auth ────────────────────────────────────
   {
     path: "/auth",
+    errorElement: <ErrorPage />,
     Component: AuthLayout,
     children: [
       { index: true, element: <Navigate to="/auth/login" replace /> },
@@ -57,6 +60,7 @@ const router = createBrowserRouter([
   // ── Protected ───────────────────────────────
   {
     path: "/",
+    errorElement: <ErrorPage />,
     element: <AppRoutes />,
     children: [
       { path: "dashboard",        element: withSuspense(Dashboard)        },
@@ -67,9 +71,7 @@ const router = createBrowserRouter([
         path: "offers",
         element: (
           <PrivateRoute allowedRoles={["employer"]}>
-            <Suspense fallback={<PageLoader />}>
-              <Offers />
-            </Suspense>
+            {withSuspense(Offers)}
           </PrivateRoute>
         ),
       },
@@ -79,9 +81,7 @@ const router = createBrowserRouter([
         path: "post",
         element: (
           <PrivateRoute allowedRoles={["employer"]}>
-            <Suspense fallback={<PageLoader />}>
-              <PostJob />
-            </Suspense>
+            {withSuspense(PostJob)}
           </PrivateRoute>
         ),
       },
@@ -91,7 +91,13 @@ const router = createBrowserRouter([
   // ── Catch-all ───────────────────────────────
   {
     path: "*",
-    element: <Navigate to="/" replace />,
+    element: (
+      <ErrorPage
+        status={404}
+        title="Page not found"
+        message="That route does not exist in NaijaJobs yet."
+      />
+    ),
   },
 ]);
 

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle,
   Clock,
-  Loader2,
   MapPin,
   PackageCheck,
   Search,
@@ -11,6 +10,7 @@ import {
 import { toast } from "sonner";
 import api from "../api/axiosInstance";
 import type { ApplicationStatus } from "../types/application";
+import { PageLoader } from "../Ui/pageLoader";
 
 interface Offer {
   _id: string;
@@ -142,9 +142,7 @@ const Offers = () => {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 size={34} className="animate-spin text-amber-500" />
-          </div>
+          <PageLoader label="Loading offers" fullScreen={false} />
         ) : filteredOffers.length === 0 ? (
           <div className="border border-dashed border-slate-800 rounded-3xl py-24 text-center bg-slate-900/30">
             <PackageCheck size={42} className="mx-auto text-slate-700 mb-4" />

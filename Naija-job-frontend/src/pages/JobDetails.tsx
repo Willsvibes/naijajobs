@@ -11,6 +11,7 @@ import {
   Building2,
   Sparkles,
 } from "lucide-react";
+import { PageLoader } from "../Ui/pageLoader";
 
 interface ApiJob {
   _id: string;
@@ -67,11 +68,7 @@ const JobDetails = () => {
   }, [fetchJob]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-      </div>
-    );
+    return <PageLoader label="Loading request details" />;
   }
 
   if (error || !job) {

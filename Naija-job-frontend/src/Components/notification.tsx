@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { ApplicationStatus } from "../types/application";
+import { PageLoader } from "../Ui/pageLoader";
 
 interface Notification {
   _id: string;
@@ -175,10 +176,7 @@ const Notifications = () => {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <Loader2 size={32} className="text-amber-500 animate-spin" />
-            <p className="text-slate-500 text-sm">Loading notifications...</p>
-          </div>
+          <PageLoader label="Loading notifications" fullScreen={false} />
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <div className="w-16 h-16 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center">
