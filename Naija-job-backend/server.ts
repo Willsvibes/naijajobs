@@ -22,15 +22,20 @@ if (!MONGODB_URI) {
 
 const app = express();
 
-
 const ALLOWED_ORIGINS = (
   process.env.CORS_ORIGINS ||
   "http://localhost:5173,http://localhost:5174"
-).split(",");
+).split(",").map(o => o.trim());
 
 app.use(
   cors({
-    origin: ALLOWED_ORIGINS,
+    origin: (origin, callback) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`));
+      }
+    },
     credentials: true,
   })
 );
