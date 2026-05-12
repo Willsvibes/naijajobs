@@ -22,7 +22,7 @@ if (!MONGODB_URI) {
 
 const app = express();
 
-// ✅ CORS (this part is GOOD)
+
 const ALLOWED_ORIGINS = (
   process.env.CORS_ORIGINS ||
   "http://localhost:5173,http://localhost:5174"
@@ -35,10 +35,12 @@ app.use(
   })
 );
 
+app.options("*", cors()); 
+
 // ✅ Body parser
 app.use(express.json());
 
-// ✅ MOVE THIS UP HERE 👇 (IMPORTANT)
+
 app.use(cookieParser());
 
 // --- Routes ---
