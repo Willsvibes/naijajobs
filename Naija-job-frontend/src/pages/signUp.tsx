@@ -54,6 +54,11 @@ const Signup = () => {
       toastError("Password must be at least 6 characters");
       return;
     }
+  
+    if (form.name.length < 3) {
+      toastError("Name must be at least 3 characters");
+      return;
+    }
 
     try {
       setLoading(true);

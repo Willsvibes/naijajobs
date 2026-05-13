@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>()(
         })),
     }),
     {
-      name: "auth-storage", // localstorage key
+      name: "auth-storage",
       storage: createJSONStorage(() => localStorage),
     }
   )
