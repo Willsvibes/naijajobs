@@ -42,7 +42,7 @@ app.use(
 
 app.options(/(.*)/, cors());
 
-// ✅ Body parser
+//  Body parser
 app.use(express.json());
 
 

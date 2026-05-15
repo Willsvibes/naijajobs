@@ -1,4 +1,4 @@
-import { Link, isRouteErrorResponse, useRouteError } from "react-router";
+import {  isRouteErrorResponse, useRouteError, useNavigate } from "react-router";
 import { AlertTriangle, ArrowLeft, Home } from "lucide-react";
 
 interface ErrorPageProps {
@@ -13,7 +13,7 @@ const ErrorPage = ({
   message,
 }: ErrorPageProps) => {
   const routeError = useRouteError();
-
+  const navigate = useNavigate();
   const resolvedStatus =
     status ?? (isRouteErrorResponse(routeError) ? routeError.status : 500);
   const resolvedTitle =
@@ -21,12 +21,11 @@ const ErrorPage = ({
     (resolvedStatus === 404
       ? "Page not found"
       : "Something went wrong");
+
   const resolvedMessage =
     message ??
     (isRouteErrorResponse(routeError)
       ? routeError.statusText
-      : routeError instanceof Error
-      ? routeError.message
       : "The app hit an unexpected problem. You can go back or return home.");
 
   return (
@@ -45,19 +44,19 @@ const ErrorPage = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/dashboard")}
             className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 px-5 py-3 text-slate-200 font-bold hover:border-amber-500/40 hover:text-amber-400 transition"
           >
             <ArrowLeft size={18} />
             Go Back
           </button>
-          <Link
-            to="/"
+          <button
+            onClick={() => navigate("/")}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-black font-black hover:bg-amber-400 transition"
           >
             <Home size={18} />
             Home
-          </Link>
+          </button>
         </div>
       </div>
     </div>

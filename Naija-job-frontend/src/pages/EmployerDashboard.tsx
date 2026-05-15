@@ -68,9 +68,9 @@ const EmployerDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
 
   const filteredJobs = jobs.filter(
     (job) =>
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase())
+      job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.company?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalMonthlyPay = jobs.reduce((sum, job) => sum + Number(job.pay), 0);

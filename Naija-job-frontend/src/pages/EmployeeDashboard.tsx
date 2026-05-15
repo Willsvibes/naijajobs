@@ -28,12 +28,12 @@ const EmployeeDashboard: React.FC<Props> = ({ jobs, onRefresh }) => {
 
   const filteredJobs = jobs.filter((job: Job) => {
     const matchSearch =
-      job.title.toLowerCase().includes(search.toLowerCase()) ||
-      job.location.toLowerCase().includes(search.toLowerCase()) ||
-      job.company.toLowerCase().includes(search.toLowerCase());
+      job.title?.toLowerCase().includes(search.toLowerCase()) ||
+      job.location?.toLowerCase().includes(search.toLowerCase()) ||
+      job.company?.toLowerCase().includes(search.toLowerCase());
 
     const matchLocation = filters.location
-      ? job.location.toLowerCase().includes(filters.location.toLowerCase())
+      ? job.location?.toLowerCase().includes(filters.location.toLowerCase())
       : true;
 
     const matchMinPay = filters.minPay ? Number(job.pay) >= Number(filters.minPay) : true;
