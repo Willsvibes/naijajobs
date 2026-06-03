@@ -20,6 +20,7 @@ const PostJob          = lazy(() => import("../pages/postJobPage"));
 const JobDetails       = lazy(() => import("../pages/JobDetails"));
 const ApplicationForm  = lazy(() => import("../pages/ApplyForm"));
 const Offers           = lazy(() => import("../pages/Offers"));
+const UserDetail       = lazy(() => import("../pages/admin/userDetails"));
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<PageLoader />}>
@@ -65,6 +66,8 @@ const router = createBrowserRouter([
     children: [
       { path: "dashboard",        element: withSuspense(Dashboard)        },
       { path: "profile",          element: withSuspense(Profile)          },
+      { path: "profile/:id",      element: withSuspense(UserDetail) },
+      { path: "user/:id",         element: withSuspense(UserDetail) },
       { path: "notifications",    element: withSuspense(Notifications)    },
       { path: "settings",         element: withSuspense(Settings)         },
       {

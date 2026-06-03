@@ -137,3 +137,31 @@ export const adminDeleteUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: (error as Error).message });
   }
 };
+
+// GET USER DETAIL
+export const getUserDetail = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select("-password -refreshToken");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Fetch their jobs if they're an employer
+    const jobs = user.role === "employer"
+      ? await Job.find({ createdBy: userId }).sort({ createdAt: -1 })
+      : [];
+
+    // Fetch their applications if they're an employee
+    const applications = user.role === "employee"
+      ? await Application.find({ applicant: userId })
+          .populate("job", "title company location")
+          .sort({ createdAt: -1 })
+      : [];
+
+    res.json({ user, jobs, applications });
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};

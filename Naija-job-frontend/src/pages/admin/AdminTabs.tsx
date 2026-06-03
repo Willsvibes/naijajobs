@@ -9,7 +9,7 @@ interface AdminTabsProps {
 const tabs = [
   { id: "overview", label: "Overview", icon: BarChart3 },
   { id: "users", label: "Users", icon: Users },
-  { id: "jobs", label: "Requests", icon: Briefcase },
+  { id: "jobs", label: "Services", icon: Briefcase },
   { id: "notifications", label: "Notifications", icon: Bell },
 ] satisfies Array<{ id: AdminTab; label: string; icon: typeof BarChart3 }>;
 

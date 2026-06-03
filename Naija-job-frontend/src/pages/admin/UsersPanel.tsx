@@ -1,6 +1,7 @@
 import { Ban, Loader2, Search, ShieldCheck, Trash2 } from "lucide-react";
 import type { AdminUser } from "./types";
 import { roleColors, safeDate } from "./utils";
+import { useNavigate } from "react-router";
 
 interface UsersPanelProps {
   users: AdminUser[];
@@ -18,7 +19,10 @@ export const UsersPanel = ({
   onSearchChange,
   onBanToggle,
   onDelete,
-}: UsersPanelProps) => (
+}: UsersPanelProps) => {
+  const navigate = useNavigate();
+
+  return (
   <div className="space-y-4">
     <div className="relative">
       <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -36,7 +40,8 @@ export const UsersPanel = ({
       {users.map((user) => (
         <div
           key={user._id}
-          className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+          onClick={() => navigate(`/profile/${user._id}`)}
+          className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
             user.banned
               ? "bg-red-500/5 border-red-500/20"
               : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
@@ -65,7 +70,10 @@ export const UsersPanel = ({
           {user.role !== "admin" && (
             <div className="flex items-center gap-1 shrink-0">
               <button
-                onClick={() => onBanToggle(user)}
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  onBanToggle(user);
+                }}
                 disabled={actionId === user._id}
                 title={user.banned ? "Unban user" : "Ban user"}
                 className={`p-2 rounded-xl border transition-all text-xs font-medium flex items-center gap-1.5 ${
@@ -85,7 +93,10 @@ export const UsersPanel = ({
               </button>
 
               <button
-                onClick={() => onDelete(user)}
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  onDelete(user);
+                }}
                 disabled={actionId === user._id}
                 title="Delete user"
                 className="p-2 rounded-xl border bg-red-500/5 border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-50"
@@ -102,4 +113,5 @@ export const UsersPanel = ({
       ))}
     </div>
   </div>
-);
+)
+};

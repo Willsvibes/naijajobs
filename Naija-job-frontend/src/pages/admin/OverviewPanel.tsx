@@ -12,7 +12,7 @@ export const OverviewPanel = ({ stats, notifications }: OverviewPanelProps) => (
   <div className="space-y-8">
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
       <StatCard label="Total Users" value={stats.totalUsers} icon={Users} color="bg-blue-500/10 border-blue-500/20 text-blue-400" />
-      <StatCard label="Requests" value={stats.totalJobs} icon={Briefcase} color="bg-amber-500/10 border-amber-500/20 text-amber-400" />
+      <StatCard label="Services" value={stats.totalJobs} icon={Briefcase} color="bg-amber-500/10 border-amber-500/20 text-amber-400" />
       <StatCard label="Offers" value={stats.totalApplications} icon={BarChart3} color="bg-emerald-500/10 border-emerald-500/20 text-emerald-400" />
       <StatCard label="Clients" value={stats.employers} icon={TrendingUp} color="bg-purple-500/10 border-purple-500/20 text-purple-400" />
       <StatCard label="Providers" value={stats.employees} icon={UserCircle2} color="bg-cyan-500/10 border-cyan-500/20 text-cyan-400" />
